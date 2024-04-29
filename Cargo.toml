@@ -1,6 +1,7 @@
 [package]
 name = "eventure"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
+uuid = { version = "1.8.0", features = ["v4"] }
