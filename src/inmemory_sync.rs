@@ -1,11 +1,11 @@
 use std::sync::Mutex;
 use crate::model::{Event, EventHandler, EventHandlerRegistry};
 
+static EVENT_HANDLER_REGISTRY: Mutex<EventHandlerRegistryImpl> = Mutex::new(EventHandlerRegistryImpl::new());
+
 struct EventHandlerRegistryImpl {
     handlers: Vec<Box<dyn EventHandler + Send>>,
 }
-
-static REGISTRY: Mutex<EventHandlerRegistryImpl> = Mutex::new(EventHandlerRegistryImpl::new());
 
 impl EventHandlerRegistryImpl {
     pub const fn new() -> Self {
@@ -13,26 +13,24 @@ impl EventHandlerRegistryImpl {
     }
 }
 
-unsafe impl Sync for EventHandlerRegistryImpl {}
-
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
-    fn register(&mut self, _event_handler: Box<dyn EventHandler + Send>) {
-        println!("event handler registered");
-        self.handlers.push(_event_handler);
+    fn register(&mut self, event_handler: Box<dyn EventHandler + Send>) {
+        println!("Event handler registered: {}", event_handler);
+        self.handlers.push(event_handler);
     }
 
-    fn emit(&self, _event: &dyn Event) {
-        println!("event emitted");
+    fn emit(&self, event: &dyn Event) {
+        println!("Event emitted: {}", event);
         for handler in self.handlers.iter() {
-            handler.handle(_event);
+            handler.handle(event);
         }
     }
 }
 
-pub fn register(_event_handler: impl EventHandler + Send + 'static) {
-    REGISTRY.lock().unwrap().register(Box::new(_event_handler));
+pub fn register(event_handler: impl EventHandler + Send + 'static) {
+    EVENT_HANDLER_REGISTRY.lock().unwrap().register(Box::new(event_handler));
 }
 
-pub fn emit(_event:&dyn Event) {
-    REGISTRY.lock().unwrap().emit(_event)
+pub fn emit(event: &dyn Event) {
+    EVENT_HANDLER_REGISTRY.lock().unwrap().emit(event)
 }
