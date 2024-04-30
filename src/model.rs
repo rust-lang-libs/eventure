@@ -1,9 +1,11 @@
-pub trait Event {
+use std::fmt::Display;
+
+pub trait Event : Display {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
 }
 
-pub trait EventHandler {
+pub trait EventHandler : Display {
     fn handle(&self, event: &dyn Event);
 }
 
