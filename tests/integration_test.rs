@@ -2,7 +2,6 @@ use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 use eventure::model;
 use eventure::inmemory_sync;
-use eventure::model::Event;
 
 struct OrderCreated {
     event_id: String,
@@ -67,12 +66,13 @@ impl Display for OrderEventHandler {
 }
 
 impl model::EventHandler for OrderEventHandler {
-    fn handle(&self, event: &dyn Event) {
+    fn handle(&self, event: &dyn model::Event) {
         println!("event handled: {}", event);
     }
 }
 
-fn main() {
+#[test]
+fn basic_scenario() {
     let customer_id = Uuid::new_v4().to_string();
     let order_created = OrderCreated::new(customer_id);
     let customer_id = Uuid::new_v4().to_string();
