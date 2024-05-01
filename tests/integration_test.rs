@@ -1,4 +1,4 @@
-use eventure::inmemory_sync;
+use eventure::{inmemory_async, inmemory_sync};
 
 mod order_created;
 mod order_canceled;
@@ -11,4 +11,8 @@ fn basic_scenario() {
     inmemory_sync::register(order_created::OrderEventHandler);
     inmemory_sync::emit(&order_created);
     inmemory_sync::emit(&order_canceled);
+
+    inmemory_async::register(order_created::OrderEventHandler);
+    inmemory_async::emit(&order_created);
+    inmemory_async::emit(&order_canceled);
 }
