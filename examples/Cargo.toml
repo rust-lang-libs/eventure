@@ -11,6 +11,10 @@ path = "src/inmemory_sync/main.rs"
 name = "inmemory-async"
 path = "src/inmemory_async/main.rs"
 
+[[example]]
+name = "kafka"
+path = "src/kafka/main.rs"
+
 [dependencies]
 eventure = { path = "../sdk" }
 uuid = { version = "1.8.0", features = ["v4"] }
