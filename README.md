@@ -7,6 +7,8 @@ for a variety of message brokers, like Kafka, RabbitMQ, Iggy, in-memory, etc... 
 be able to handle all possible event-driven oriented scenarions, both for modular monolith and distributed
 applications (microservices, typically).
 
+[*Release notes*](https://github.com/rust-lang-libs/eventure/releases)
+
 ## Building the project
 `cargo build`
 
