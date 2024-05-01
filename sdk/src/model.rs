@@ -12,6 +12,17 @@ pub trait EventHandler: Display {
 }
 
 pub trait EventHandlerRegistry {
-    fn register(&mut self, event_handler: Box<dyn EventHandler + Send>);
+    fn register(&mut self, message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>);
     fn emit(&self, event: &dyn Event);
+}
+
+#[allow(dead_code)]
+pub struct MessageChannel {
+    pub channel_type: ChannelType,
+    pub name: String,
+}
+
+pub enum ChannelType {
+    TOPIC,
+    QUEUE,
 }

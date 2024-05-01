@@ -3,7 +3,7 @@ use crate::{create_registry_backbone};
 create_registry_backbone!();
 
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
-    fn register(&mut self, event_handler: Box<dyn EventHandler + Send>) {
+    fn register(&mut self, _message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>) {
         println!("Sync in-memory event handler registered: {}", event_handler);
         self.handlers.push(event_handler);
     }
@@ -15,3 +15,4 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
         }
     }
 }
+
