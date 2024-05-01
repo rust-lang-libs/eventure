@@ -65,4 +65,3 @@ impl OrderCreatedEventHandler {
         println!("Handling {}", event)
     }
 }
-
