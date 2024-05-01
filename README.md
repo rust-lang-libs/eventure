@@ -1,3 +1,3 @@
-# Event-Driven message handling bibrary written in Rust
+# Event-Driven message handling library written in Rust
 
 It's an early alpha version, not ready for production yet.
