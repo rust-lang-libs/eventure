@@ -1,0 +1,16 @@
+[package]
+name = "eventure-examples"
+version = "0.1.1"
+edition = "2021"
+
+[[example]]
+name = "inmemory-sync"
+path = "src/inmemory_sync/main.rs"
+
+[[example]]
+name = "inmemory-async"
+path = "src/inmemory_async/main.rs"
+
+[dependencies]
+eventure = { path = "../sdk" }
+uuid = { version = "1.8.0", features = ["v4"] }

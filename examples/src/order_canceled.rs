@@ -9,9 +9,15 @@ pub struct OrderCanceled {
     customer_id: String,
 }
 
-pub fn create_order_canceled() -> OrderCanceled {
+pub fn create() -> OrderCanceled {
     let customer_id = Uuid::new_v4().to_string();
     OrderCanceled::new(customer_id)
+}
+
+pub struct OrderCanceledEventHandler;
+
+pub fn handler() -> OrderCanceledEventHandler {
+    OrderCanceledEventHandler
 }
 
 impl OrderCanceled {
