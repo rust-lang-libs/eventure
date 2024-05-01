@@ -3,11 +3,13 @@ use uuid::Uuid;
 use eventure::model;
 use eventure::inmemory_sync;
 
+#[allow(dead_code)]
 struct OrderCreated {
     event_id: String,
     customer_id: String,
 }
 
+#[allow(dead_code)]
 struct OrderCanceled {
     event_id: String,
     customer_id: String,
@@ -44,7 +46,7 @@ impl model::Event for OrderCreated {
         &self.event_id[..]
     }
     fn name(&self) -> &str {
-        &self.customer_id[..]
+        "OrderCreated"
     }
 }
 
@@ -53,7 +55,7 @@ impl model::Event for OrderCanceled {
         &self.event_id[..]
     }
     fn name(&self) -> &str {
-        &self.customer_id[..]
+        "OrderCanceled"
     }
 }
 
@@ -71,15 +73,22 @@ impl model::EventHandler for OrderEventHandler {
     }
 }
 
+fn create_order_created() -> OrderCreated {
+    let customer_id = Uuid::new_v4().to_string();
+    OrderCreated::new(customer_id)
+}
+
+fn create_order_canceled() -> OrderCanceled {
+    let customer_id = Uuid::new_v4().to_string();
+    OrderCanceled::new(customer_id)
+}
+
 #[test]
 fn basic_scenario() {
-    let customer_id = Uuid::new_v4().to_string();
-    let order_created = OrderCreated::new(customer_id);
-    let customer_id = Uuid::new_v4().to_string();
-    let order_canceled = OrderCanceled::new(customer_id);
-    let event_handler = OrderEventHandler;
+    let order_created = create_order_created();
+    let order_canceled = create_order_canceled();
 
-    inmemory_sync::register(event_handler);
+    inmemory_sync::register(OrderEventHandler);
     inmemory_sync::emit(&order_created);
     inmemory_sync::emit(&order_canceled);
 }
