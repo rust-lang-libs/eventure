@@ -1,6 +1,6 @@
 use eventure_examples::shared::order_created;
 use eventure_examples::shared::order_canceled;
-use eventure::{in_memory_async};
+use eventure::in_memory_async;
 use eventure::model::ChannelType;
 
 fn main() {
