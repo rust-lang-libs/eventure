@@ -9,30 +9,6 @@ pub trait EventHandlerRegistry {
     fn emit(&self, event: &dyn Event);
 }
 
-struct EventHandlerRegistryImpl {
-    handlers: Vec<Box<dyn EventHandler + Send>>,
-}
-
-impl EventHandlerRegistryImpl {
-    pub const fn new() -> Self {
-        EventHandlerRegistryImpl { handlers: Vec::new() }
-    }
-}
-
-impl EventHandlerRegistry for EventHandlerRegistryImpl {
-    fn register(&mut self, _message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>) {
-        println!("Async in-memory event handler registered: {}", event_handler);
-        self.handlers.push(event_handler);
-    }
-
-    fn emit(&self, event: &dyn Event) {
-        println!("Async event emitted: {}", event);
-        for handler in self.handlers.iter() {
-            handler.handle(event);
-        }
-    }
-}
-
 pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) -> MessageChannel {
     MessageChannel {
         channel_type,
@@ -57,6 +33,47 @@ pub enum ChannelType {
     QUEUE,
 }
 
+pub struct MessageBrokerConfiguration {
+    message_channel: MessageChannel,
+    durable: bool,
+}
+
+pub fn setup(configuration: MessageBrokerConfiguration) {
+    BROKER_CONFIGURATION.lock().unwrap().update(configuration);
+}
+
+pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
+    HANDLER_REGISTRY.lock().unwrap().register(message_channel, Box::new(event_handler));
+}
+
+pub fn emit(event: &dyn Event) {
+    HANDLER_REGISTRY.lock().unwrap().emit(event)
+}
+
+struct EventHandlerRegistryImpl {
+    handlers: Vec<Box<dyn EventHandler + Send>>,
+}
+
+impl EventHandlerRegistryImpl {
+    pub const fn new() -> Self {
+        EventHandlerRegistryImpl { handlers: Vec::new() }
+    }
+}
+
+impl EventHandlerRegistry for EventHandlerRegistryImpl {
+    fn register(&mut self, _message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>) {
+        println!("Async in-memory event handler registered: {}", event_handler);
+        self.handlers.push(event_handler);
+    }
+
+    fn emit(&self, event: &dyn Event) {
+        println!("Async event emitted: {}", event);
+        for handler in self.handlers.iter() {
+            handler.handle(event);
+        }
+    }
+}
+
 impl MessageChannel {
     pub const fn new() -> Self {
         MessageChannel {
@@ -71,11 +88,6 @@ impl MessageChannel {
     }
 }
 
-pub struct MessageBrokerConfiguration {
-    message_channel: MessageChannel,
-    durable: bool,
-}
-
 impl MessageBrokerConfiguration {
     pub const fn new() -> Self {
         MessageBrokerConfiguration {
@@ -88,16 +100,4 @@ impl MessageBrokerConfiguration {
         self.message_channel = configuration.message_channel;
         self.durable = configuration.durable;
     }
-}
-
-pub fn setup(configuration: MessageBrokerConfiguration) {
-    BROKER_CONFIGURATION.lock().unwrap().update(configuration);
-}
-
-pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
-    HANDLER_REGISTRY.lock().unwrap().register(message_channel, Box::new(event_handler));
-}
-
-pub fn emit(event: &dyn Event) {
-    HANDLER_REGISTRY.lock().unwrap().emit(event)
 }
