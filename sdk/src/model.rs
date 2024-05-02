@@ -16,7 +16,6 @@ pub trait EventHandlerRegistry {
     fn emit(&self, event: &dyn Event);
 }
 
-#[allow(dead_code)]
 pub struct MessageChannel {
     pub channel_type: ChannelType,
     pub name: String,
