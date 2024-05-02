@@ -3,8 +3,9 @@ name = "eventure"
 description = "Event-Driven message handling library"
 repository = "https://github.com/rust-lang-libs/eventure"
 readme = "../README.md"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
+license = "MIT"
 license-file = "../LICENSE"
 
 [dependencies]
