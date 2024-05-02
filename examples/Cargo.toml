@@ -4,12 +4,8 @@ version = "0.0.5"
 edition = "2021"
 
 [[example]]
-name = "in-memory-sync"
-path = "src/in_memory_sync/main.rs"
-
-[[example]]
-name = "in-memory-async"
-path = "src/in_memory_async/main.rs"
+name = "in-memory"
+path = "src/in_memory/main.rs"
 
 [[example]]
 name = "kafka"

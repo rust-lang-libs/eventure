@@ -1,4 +1,3 @@
 pub mod model;
-pub mod in_memory_sync;
-pub mod in_memory_async;
+pub mod in_memory;
 pub mod kafka;
