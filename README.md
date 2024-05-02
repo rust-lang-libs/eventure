@@ -22,11 +22,8 @@ applications (microservices, typically).
 `cargo build`
 
 ## Running examples
-### In-Memory synchronous messages
-`cargo run --example inmemory-sync`
+### In-Memory messages
+`cargo run --example in-memory`
 
-### In-Memory asynchronous messages (dummy implementation at the moment)
-`cargo run --example inmemory-async`
-
-### Kafka messages (dummy implementation at the moment)
-`cargo run --example inmemory-async`
+### Kafka messages
+`cargo run --example kafka`

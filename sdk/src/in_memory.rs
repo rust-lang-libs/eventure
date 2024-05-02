@@ -16,10 +16,10 @@ pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) ->
     }
 }
 
-pub fn configuration(channel_type: ChannelType, channel_name: &'static str, durable: bool) -> MessageBrokerConfiguration {
+pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_async: bool) -> MessageBrokerConfiguration {
     MessageBrokerConfiguration {
         message_channel: message_channel(channel_type, channel_name),
-        durable,
+        is_async
     }
 }
 
@@ -35,7 +35,7 @@ pub enum ChannelType {
 
 pub struct MessageBrokerConfiguration {
     message_channel: MessageChannel,
-    durable: bool,
+    is_async: bool
 }
 
 pub fn setup(configuration: MessageBrokerConfiguration) {
@@ -62,12 +62,12 @@ impl EventHandlerRegistryImpl {
 
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
     fn register(&mut self, _message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>) {
-        println!("Async in-memory event handler registered: {}", event_handler);
+        println!("In-memory event handler registered: {}", event_handler);
         self.handlers.push(event_handler);
     }
 
     fn emit(&self, event: &dyn Event) {
-        println!("Async event emitted: {}", event);
+        println!("In-memory event emitted: {}", event);
         for handler in self.handlers.iter() {
             handler.handle(event);
         }
@@ -92,12 +92,13 @@ impl MessageBrokerConfiguration {
     pub const fn new() -> Self {
         MessageBrokerConfiguration {
             message_channel: MessageChannel::new(),
-            durable: false,
+            is_async: false
         }
     }
 
     pub fn update(&mut self, configuration: MessageBrokerConfiguration) {
         self.message_channel = configuration.message_channel;
-        self.durable = configuration.durable;
+        self.is_async = configuration.is_async;
     }
 }
+
