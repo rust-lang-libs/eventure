@@ -9,6 +9,40 @@ pub trait EventHandlerRegistry {
     fn emit(&self, event: &dyn Event);
 }
 
+pub fn message_channel(channel_name: &'static str, partition: i32) -> MessageChannel {
+    MessageChannel {
+        name: channel_name,
+        partition,
+    }
+}
+
+pub fn configuration(channel_name: &'static str, partition: i32) -> MessageBrokerConfiguration {
+    MessageBrokerConfiguration {
+        message_channel: message_channel(channel_name, partition)
+    }
+}
+
+pub struct MessageChannel {
+    pub name: &'static str,
+    pub partition: i32,
+}
+
+pub struct MessageBrokerConfiguration {
+    message_channel: MessageChannel,
+}
+
+pub fn setup(configuration: MessageBrokerConfiguration) {
+    BROKER_CONFIGURATION.lock().unwrap().update(configuration);
+}
+
+pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
+    HANDLER_REGISTRY.lock().unwrap().register(message_channel, Box::new(event_handler));
+}
+
+pub fn emit(event: &dyn Event) {
+    HANDLER_REGISTRY.lock().unwrap().emit(event)
+}
+
 struct EventHandlerRegistryImpl {
     handlers: Vec<Box<dyn EventHandler + Send>>,
 }
@@ -33,24 +67,6 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
     }
 }
 
-pub fn message_channel(channel_name: &'static str, partition: i32) -> MessageChannel {
-    MessageChannel {
-        name: channel_name,
-        partition,
-    }
-}
-
-pub fn configuration(channel_name: &'static str, partition: i32) -> MessageBrokerConfiguration {
-    MessageBrokerConfiguration {
-        message_channel: message_channel(channel_name, partition)
-    }
-}
-
-pub struct MessageChannel {
-    pub name: &'static str,
-    pub partition: i32,
-}
-
 impl MessageChannel {
     pub const fn new() -> Self {
         MessageChannel {
@@ -64,10 +80,6 @@ impl MessageChannel {
     }
 }
 
-pub struct MessageBrokerConfiguration {
-    message_channel: MessageChannel,
-}
-
 impl MessageBrokerConfiguration {
     pub const fn new() -> Self {
         MessageBrokerConfiguration {
@@ -78,16 +90,4 @@ impl MessageBrokerConfiguration {
     pub fn update(&mut self, configuration: MessageBrokerConfiguration) {
         self.message_channel = configuration.message_channel;
     }
-}
-
-pub fn setup(configuration: MessageBrokerConfiguration) {
-    BROKER_CONFIGURATION.lock().unwrap().update(configuration);
-}
-
-pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
-    HANDLER_REGISTRY.lock().unwrap().register(message_channel, Box::new(event_handler));
-}
-
-pub fn emit(event: &dyn Event) {
-    HANDLER_REGISTRY.lock().unwrap().emit(event)
 }
