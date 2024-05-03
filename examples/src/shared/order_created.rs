@@ -75,8 +75,7 @@ impl model::EventHandler for OrderCreatedEventHandler {
         match event.as_any().downcast_ref::<OrderCreated>() {
             Some(order_create) => self.handle(order_create),
             None => println!("{}: not handling {}",
-                             "OrderCreatedEventHandler".bold().green(),
-                             event)
+                             "OrderCreatedEventHandler".bold().green(), event)
         }
     }
 }
@@ -84,7 +83,6 @@ impl model::EventHandler for OrderCreatedEventHandler {
 impl OrderCreatedEventHandler {
     fn handle(&self, event: &OrderCreated) {
         println!("{}: handling {}",
-                 "OrderCreatedEventHandler".bold().green(),
-                 event)
+                 "OrderCreatedEventHandler".bold().green(), event)
     }
 }
