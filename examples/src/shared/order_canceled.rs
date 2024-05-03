@@ -10,7 +10,7 @@ pub struct OrderCanceled {
 }
 
 pub fn create() -> OrderCanceled {
-    let customer_id = Uuid::new_v4().to_string();
+    let customer_id = String::from(&Uuid::new_v4().to_string()[..6]);
     OrderCanceled::new(customer_id)
 }
 
@@ -22,14 +22,14 @@ pub fn handler() -> OrderCanceledEventHandler {
 
 impl OrderCanceled {
     pub fn new(customer_id: String) -> OrderCanceled {
-        let event_id = Uuid::new_v4().to_string();
+        let event_id =  String::from(&Uuid::new_v4().to_string()[..6]);
         OrderCanceled { event_id, customer_id }
     }
 }
 
 impl Display for OrderCanceled {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "OrderCanceled with id {}", self.event_id)
+        write!(f, "OrderCanceled event with id {}", self.event_id)
     }
 }
 
