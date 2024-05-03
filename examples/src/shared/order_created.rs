@@ -2,10 +2,10 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+use eventure::model;
 use std::any::Any;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
-use eventure::model;
 use colored::Colorize;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ pub fn handler() -> OrderCreatedEventHandler {
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 impl OrderCreated {
-    pub fn new(customer_id: String) -> OrderCreated {
+    fn new(customer_id: String) -> OrderCreated {
         let event_id = String::from(&Uuid::new_v4().to_string()[..6]);
         OrderCreated { event_id, customer_id }
     }
