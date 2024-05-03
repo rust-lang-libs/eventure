@@ -7,10 +7,6 @@ edition = "2021"
 name = "in-memory"
 path = "src/in_memory/main.rs"
 
-[[example]]
-name = "kafka"
-path = "src/kafka/main.rs"
-
 [dependencies]
 eventure = { path = "../sdk" }
 uuid = { version = "1.8.0", features = ["v4"] }
