@@ -1,30 +1,16 @@
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Rust-Lang Libs/Eventure 2024
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 use regex::Regex;
-use crate::model::{Event, EventHandler};
 use colored::Colorize;
 
-static HANDLER_REGISTRY: Mutex<EventHandlerRegistryImpl> = Mutex::new(EventHandlerRegistryImpl::new());
-static BROKER_CONFIGURATION: Mutex<MessageBrokerConfigurationInternal> = Mutex::new(MessageBrokerConfigurationInternal::new());
-
-trait EventHandlerRegistry {
-    fn register(&mut self, message_channel: MessageChannelInternal, event_handler: Box<dyn EventHandler + Send>);
-    fn emit(&self, event: &dyn Event, channel: Option<MessageChannel>);
-}
-
-pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) -> MessageChannel {
-    MessageChannel {
-        channel_type,
-        name: channel_name,
-    }
-}
-
-pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_async: bool) -> MessageBrokerConfiguration {
-    MessageBrokerConfiguration {
-        message_channel: message_channel(channel_type, channel_name),
-        is_async,
-    }
-}
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Public structs
+// -----------------------------------------------------------------------------------------------------------------------------------------
 
 pub struct MessageChannel {
     pub channel_type: ChannelType,
@@ -40,6 +26,24 @@ pub enum ChannelType {
 pub struct MessageBrokerConfiguration {
     message_channel: MessageChannel,
     is_async: bool,
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Public functions
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) -> MessageChannel {
+    MessageChannel {
+        channel_type,
+        name: channel_name,
+    }
+}
+
+pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_async: bool) -> MessageBrokerConfiguration {
+    MessageBrokerConfiguration {
+        message_channel: message_channel(channel_type, channel_name),
+        is_async,
+    }
 }
 
 pub fn setup(configuration: MessageBrokerConfiguration) {
@@ -60,10 +64,48 @@ pub fn emit_to_channel(event: &dyn Event, channel: MessageChannel) {
     HANDLER_REGISTRY.lock().unwrap().emit(event, Some(channel));
 }
 
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Private statics
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+static HANDLER_REGISTRY: Mutex<EventHandlerRegistryImpl> = Mutex::new(EventHandlerRegistryImpl::new());
+static BROKER_CONFIGURATION: Mutex<MessageBrokerConfigurationInternal> = Mutex::new(MessageBrokerConfigurationInternal::new());
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Private structs
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
 struct MessageChannelInternal {
     channel_type: ChannelType,
     name_regex: Option<Regex>,
 }
+
+struct MessageBrokerConfigurationInternal {
+    message_channel: MessageChannelInternal,
+    is_async: bool,
+}
+
+struct EventHandlerRegistryImpl {
+    handler_configs: Vec<HandlerConfiguration>,
+}
+
+struct HandlerConfiguration {
+    handler: Box<dyn EventHandler + Send>,
+    channel: MessageChannelInternal,
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Private traits
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+trait EventHandlerRegistry {
+    fn register(&mut self, message_channel: MessageChannelInternal, event_handler: Box<dyn EventHandler + Send>);
+    fn emit(&self, event: &dyn Event, channel: Option<MessageChannel>);
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Implementation
+// -----------------------------------------------------------------------------------------------------------------------------------------
 
 impl MessageChannelInternal {
     pub const fn new() -> Self {
@@ -88,11 +130,6 @@ impl MessageChannelInternal {
     }
 }
 
-struct MessageBrokerConfigurationInternal {
-    message_channel: MessageChannelInternal,
-    is_async: bool,
-}
-
 impl MessageBrokerConfigurationInternal {
     pub const fn new() -> Self {
         MessageBrokerConfigurationInternal {
@@ -112,10 +149,6 @@ impl MessageBrokerConfigurationInternal {
         self.message_channel = configuration.message_channel;
         self.is_async = configuration.is_async;
     }
-}
-
-struct EventHandlerRegistryImpl {
-    handler_configs: Vec<HandlerConfiguration>,
 }
 
 impl EventHandlerRegistryImpl {
@@ -193,7 +226,3 @@ impl MessageBrokerConfiguration {
     }
 }
 
-struct HandlerConfiguration {
-    handler: Box<dyn EventHandler + Send>,
-    channel: MessageChannelInternal,
-}

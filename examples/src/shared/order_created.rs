@@ -1,8 +1,16 @@
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Rust-Lang Libs/Eventure 2024
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
 use std::any::Any;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 use eventure::model;
 use colored::Colorize;
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Public structs
+// -----------------------------------------------------------------------------------------------------------------------------------------
 
 #[allow(dead_code)]
 pub struct OrderCreated {
@@ -10,16 +18,24 @@ pub struct OrderCreated {
     customer_id: String,
 }
 
+pub struct OrderCreatedEventHandler;
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Public functions
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
 pub fn create() -> OrderCreated {
     let customer_id = String::from(&Uuid::new_v4().to_string()[..6]);
     OrderCreated::new(customer_id)
 }
 
-pub struct OrderCreatedEventHandler;
-
 pub fn handler() -> OrderCreatedEventHandler {
     OrderCreatedEventHandler
 }
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Implementation
+// -----------------------------------------------------------------------------------------------------------------------------------------
 
 impl OrderCreated {
     pub fn new(customer_id: String) -> OrderCreated {
@@ -58,13 +74,17 @@ impl model::EventHandler for OrderCreatedEventHandler {
     fn handle(&self, event: &(dyn model::Event + '_)) {
         match event.as_any().downcast_ref::<OrderCreated>() {
             Some(order_create) => self.handle(order_create),
-            None => println!("{}: not handling {}", "OrderCreatedEventHandler".bold().green(), event)
+            None => println!("{}: not handling {}",
+                             "OrderCreatedEventHandler".bold().green(),
+                             event)
         }
     }
 }
 
 impl OrderCreatedEventHandler {
     fn handle(&self, event: &OrderCreated) {
-        println!("{}: handling {}", "OrderCreatedEventHandler".bold().green(), event)
+        println!("{}: handling {}",
+                 "OrderCreatedEventHandler".bold().green(),
+                 event)
     }
 }
