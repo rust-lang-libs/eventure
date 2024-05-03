@@ -47,7 +47,7 @@ impl OrderCanceled {
 impl Display for OrderCanceled {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} event with id {}",
-               "OrderCanceled".bold().purple(),
+               "OrderCanceled".bold().yellow().italic().underline(),
                self.event_id)
     }
 }
@@ -63,4 +63,3 @@ impl model::Event for OrderCanceled {
         self
     }
 }
-

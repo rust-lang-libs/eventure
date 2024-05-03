@@ -47,7 +47,7 @@ impl OrderCreated {
 impl Display for OrderCreated {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} event with id {}",
-               "OrderCreated".bold().purple(),
+               "OrderCreated".bold().yellow().italic().underline(),
                self.event_id)
     }
 }
@@ -66,7 +66,7 @@ impl model::Event for OrderCreated {
 
 impl Display for OrderCreatedEventHandler {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "OrderEventHandler".bold().purple())
+        write!(f, "{}", "OrderEventHandler".bold().yellow().italic().underline())
     }
 }
 
