@@ -50,7 +50,10 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
     BROKER_CONFIGURATION.lock().unwrap().update(MessageBrokerConfigurationInternal::from(configuration));
 }
 
-pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
+pub fn register(
+    message_channel: MessageChannel,
+    event_handler: impl EventHandler + Send + 'static) {
+
     HANDLER_REGISTRY.lock().unwrap().register(
         MessageChannelInternal::from(message_channel),
         Box::new(event_handler));
@@ -131,7 +134,7 @@ impl MessageChannelInternal {
 }
 
 impl MessageBrokerConfigurationInternal {
-    pub const fn new() -> Self {
+    const fn new() -> Self {
         MessageBrokerConfigurationInternal {
             message_channel: MessageChannelInternal::new(),
             is_async: false,
@@ -152,7 +155,7 @@ impl MessageBrokerConfigurationInternal {
 }
 
 impl EventHandlerRegistryImpl {
-    pub const fn new() -> Self {
+    const fn new() -> Self {
         EventHandlerRegistryImpl { handler_configs: Vec::new() }
     }
 }
