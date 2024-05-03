@@ -6,7 +6,7 @@ static BROKER_CONFIGURATION: Mutex<MessageBrokerConfiguration> = Mutex::new(Mess
 
 pub trait EventHandlerRegistry {
     fn register(&mut self, message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>);
-    fn emit(&self, event: &dyn Event);
+    fn emit(&self, event: &dyn Event, channel: Option<MessageChannel>);
 }
 
 pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) -> MessageChannel {
@@ -19,7 +19,7 @@ pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) ->
 pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_async: bool) -> MessageBrokerConfiguration {
     MessageBrokerConfiguration {
         message_channel: message_channel(channel_type, channel_name),
-        is_async
+        is_async,
     }
 }
 
@@ -28,6 +28,7 @@ pub struct MessageChannel {
     pub name: &'static str,
 }
 
+#[derive(PartialEq, Eq)]
 pub enum ChannelType {
     TOPIC,
     QUEUE,
@@ -35,7 +36,7 @@ pub enum ChannelType {
 
 pub struct MessageBrokerConfiguration {
     message_channel: MessageChannel,
-    is_async: bool
+    is_async: bool,
 }
 
 pub fn setup(configuration: MessageBrokerConfiguration) {
@@ -47,29 +48,47 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 }
 
 pub fn emit(event: &dyn Event) {
-    HANDLER_REGISTRY.lock().unwrap().emit(event)
+    HANDLER_REGISTRY.lock().unwrap().emit(event, None);
+}
+
+pub fn emit_to_channel(event: &dyn Event, channel: MessageChannel) {
+    HANDLER_REGISTRY.lock().unwrap().emit(event, Some(channel));
 }
 
 struct EventHandlerRegistryImpl {
-    handlers: Vec<Box<dyn EventHandler + Send>>,
+    handler_configs: Vec<HandlerConfiguration>,
 }
 
 impl EventHandlerRegistryImpl {
     pub const fn new() -> Self {
-        EventHandlerRegistryImpl { handlers: Vec::new() }
+        EventHandlerRegistryImpl { handler_configs: Vec::new() }
     }
 }
 
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
-    fn register(&mut self, _message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>) {
-        println!("In-memory event handler registered: {}", event_handler);
-        self.handlers.push(event_handler);
+    fn register(&mut self, channel: MessageChannel, handler: Box<dyn EventHandler + Send>) {
+        println!("In-memory event handler registered: {}", handler);
+        self.handler_configs.push(HandlerConfiguration { handler, channel });
     }
 
-    fn emit(&self, event: &dyn Event) {
+    fn emit(&self, event: &dyn Event, channel: Option<MessageChannel>) {
         println!("In-memory event emitted: {}", event);
-        for handler in self.handlers.iter() {
-            handler.handle(event);
+
+        match channel {
+            Some(channel) =>
+                for config in self.handler_configs.iter() {
+                    if config.channel.matches(&channel) {
+                        println!("Channel matched");
+                        config.handler.handle(event);
+                    } else {
+                        println!("Channel not matched");
+                    }
+                }
+            None =>
+                for config in self.handler_configs.iter() {
+                    println!("Channel matched");
+                    config.handler.handle(event);
+                }
         }
     }
 }
@@ -78,7 +97,7 @@ impl MessageChannel {
     pub const fn new() -> Self {
         MessageChannel {
             channel_type: ChannelType::TOPIC,
-            name: "*"
+            name: "*",
         }
     }
 
@@ -86,13 +105,18 @@ impl MessageChannel {
         self.channel_type = message_channel.channel_type;
         self.name = message_channel.name;
     }
+
+    pub fn matches(&self, channel: &MessageChannel) -> bool {
+        self.channel_type == channel.channel_type
+            && (self.name == "*" || channel.name == "*" || self.name == channel.name)
+    }
 }
 
 impl MessageBrokerConfiguration {
     pub const fn new() -> Self {
         MessageBrokerConfiguration {
             message_channel: MessageChannel::new(),
-            is_async: false
+            is_async: false,
         }
     }
 
@@ -102,3 +126,7 @@ impl MessageBrokerConfiguration {
     }
 }
 
+struct HandlerConfiguration {
+    handler: Box<dyn EventHandler + Send>,
+    channel: MessageChannel,
+}
