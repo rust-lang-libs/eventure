@@ -7,6 +7,7 @@ use std::any::Any;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 use colored::Colorize;
+use crate::shared::common::generate_id;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs
@@ -25,7 +26,7 @@ pub struct OrderCanceledEventHandler;
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 pub fn create() -> OrderCanceled {
-    let customer_id = String::from(&Uuid::new_v4().to_string()[..6]);
+    let customer_id = generate_id();
     OrderCanceled::new(customer_id)
 }
 
@@ -39,7 +40,7 @@ pub fn handler() -> OrderCanceledEventHandler {
 
 impl OrderCanceled {
     fn new(customer_id: String) -> OrderCanceled {
-        let event_id = String::from(&Uuid::new_v4().to_string()[..6]);
+        let event_id = generate_id();
         OrderCanceled { event_id, customer_id }
     }
 }
