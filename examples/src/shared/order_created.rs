@@ -7,6 +7,7 @@ use std::any::Any;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 use colored::Colorize;
+use log::info;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs
@@ -74,15 +75,13 @@ impl model::EventHandler for OrderCreatedEventHandler {
     fn handle(&self, event: &(dyn model::Event + '_)) {
         match event.as_any().downcast_ref::<OrderCreated>() {
             Some(order_create) => self.handle(order_create),
-            None => println!("{}: not handling {}",
-                             "OrderCreatedEventHandler".bold().green(), event)
+            None => info!(target: "OrderCreatedEventHandler", "not handling {}", event)
         }
     }
 }
 
 impl OrderCreatedEventHandler {
     fn handle(&self, event: &OrderCreated) {
-        println!("{}: handling {}",
-                 "OrderCreatedEventHandler".bold().green(), event)
+        info!(target: "OrderCreatedEventHandler", "handling {}", event)
     }
 }
