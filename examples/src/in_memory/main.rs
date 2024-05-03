@@ -2,6 +2,7 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+use simple_logger::SimpleLogger;
 use examples::shared::order_created;
 use examples::shared::order_canceled;
 use eventure::in_memory;
@@ -14,6 +15,7 @@ use eventure::in_memory::ChannelType::{QUEUE, TOPIC};
 
 fn main() {
     println!();
+    SimpleLogger::new().init().unwrap();
 
     let order_created = order_created::create();
     let order_canceled = order_canceled::create();

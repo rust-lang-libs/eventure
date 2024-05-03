@@ -6,7 +6,7 @@ use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 use regex::Regex;
-use colored::Colorize;
+use log::{info};
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs
@@ -363,31 +363,24 @@ impl EventHandlerRegistryImpl {
 
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
     fn register(&mut self, channel: MessageChannelInternal, handler: Box<dyn EventHandler + Send>) {
-        println!("{}: in-memory event handler registered: {}",
-                 "EventHandlerRegistry".bold().green(), handler);
+        info!(target: "EventHandlerRegistry", "in-memory event handler registered: {}",handler);
         self.handler_configs.push(HandlerConfiguration { handler, channel });
     }
 
     fn emit(&self, event: &dyn Event, channel_option: Option<MessageChannel>) {
-        println!("{}: in-memory event emitted: {}",
-                 "EventHandlerRegistry".bold().green(), event);
-
+        info!(target: "EventHandlerRegistry","in-memory event emitted: {}",event);
         match channel_option {
             Some(channel) =>
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
-                        println!("{}: channel matched (handler: {}, channel: {})",
-                                 "EventHandlerRegistry".bold().green(), config.handler, channel);
-                        config.handler.handle(event);
+                        info!(target: "EventHandlerRegistry", "channel matched (handler: {}, channel: {})", config.handler, channel);
                     } else {
-                        println!("{}: channel not matched (handler: {}, channel: {})",
-                                 "EventHandlerRegistry".bold().green(), config.handler, channel);
+                        info!(target: "EventHandlerRegistry", "channel not matched (handler: {}, channel: {})", config.handler, channel);
                     }
                 }
             None =>
                 for config in self.handler_configs.iter() {
-                    println!("{}: not-specified channel matched by default (handler: {})",
-                             "EventHandlerRegistry".bold().green(), config.handler);
+                    info!(target: "EventHandlerRegistry", "not-specified channel matched by default (handler: {})", config.handler);
                     config.handler.handle(event);
                 }
         }

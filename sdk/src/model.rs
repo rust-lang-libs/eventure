@@ -53,6 +53,7 @@ pub trait Event: Display {
 ///
 /// ```
 /// use std::fmt::{Display, Formatter};
+/// use log::info;
 /// use eventure::model;
 /// struct OrderCreatedEventHandler;
 ///
@@ -77,14 +78,14 @@ pub trait Event: Display {
 ///     fn handle(&self, event: &(dyn model::Event + '_)) {
 ///         match event.as_any().downcast_ref::<OrderCreated>() {
 ///             Some(order_create) => self.handle(order_create),
-///             None => println!("{}: not handling {}", "OrderCreatedEventHandler", event)
+///             None => info!(target: "OrderCreatedEventHandler", "not handling {}", event)
 ///         }
 ///     }
 /// }
 ///
 /// impl OrderCreatedEventHandler {
 ///     fn handle(&self, event: &OrderCreated) {
-///         println!("{}: handling {}","OrderCreatedEventHandler", event)
+///         info!(target: "OrderCreatedEventHandler", "handling {}", event)
 ///     }
 /// }
 /// ```
