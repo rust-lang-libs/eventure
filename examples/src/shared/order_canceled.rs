@@ -2,10 +2,10 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+use eventure::model;
 use std::any::Any;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
-use eventure::model;
 use colored::Colorize;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ pub fn handler() -> OrderCanceledEventHandler {
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 impl OrderCanceled {
-    pub fn new(customer_id: String) -> OrderCanceled {
+    fn new(customer_id: String) -> OrderCanceled {
         let event_id = String::from(&Uuid::new_v4().to_string()[..6]);
         OrderCanceled { event_id, customer_id }
     }
@@ -47,7 +47,7 @@ impl OrderCanceled {
 impl Display for OrderCanceled {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} event with id {}",
-               "OrderCanceled".bold().purple(),
+               "OrderCanceled".bold().yellow().italic().underline(),
                self.event_id)
     }
 }
@@ -63,4 +63,3 @@ impl model::Event for OrderCanceled {
         self
     }
 }
-

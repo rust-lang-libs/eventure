@@ -108,21 +108,21 @@ trait EventHandlerRegistry {
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 impl MessageChannelInternal {
-    pub const fn new() -> Self {
+    const fn new() -> Self {
         MessageChannelInternal {
             channel_type: ChannelType::TOPIC,
             name_regex: None,
         }
     }
 
-    pub fn from(message_channel: MessageChannel) -> Self {
+    fn from(message_channel: MessageChannel) -> Self {
         MessageChannelInternal {
             channel_type: message_channel.channel_type,
             name_regex: Some(Regex::new(message_channel.name).unwrap()),
         }
     }
 
-    pub fn matches(&self, channel: &MessageChannel) -> bool {
+    fn matches(&self, channel: &MessageChannel) -> bool {
         match &self.name_regex {
             Some(regex) => self.channel_type == channel.channel_type && (regex.captures(channel.name).is_some()),
             None => false
@@ -197,32 +197,10 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
     }
 }
 
-impl MessageChannel {
-    pub const fn new() -> Self {
-        MessageChannel {
-            channel_type: ChannelType::TOPIC,
-            name: ".*",
-        }
-    }
-
-    pub fn update(&mut self, message_channel: MessageChannel) {
-        self.channel_type = message_channel.channel_type;
-        self.name = message_channel.name;
-    }
-}
-
 impl Display for MessageChannel {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{:?},{:?}]", self.channel_type, self.name)
     }
 }
 
-impl MessageBrokerConfiguration {
-    pub const fn new() -> Self {
-        MessageBrokerConfiguration {
-            message_channel: MessageChannel::new(),
-            is_async: false,
-        }
-    }
-}
 
