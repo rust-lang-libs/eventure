@@ -3,14 +3,12 @@ name = "eventure"
 description = "Event-Driven messaging library for Rust"
 repository = "https://github.com/rust-lang-libs/eventure"
 readme = "../README.md"
-version = "0.0.7"
+version = "0.0.8"
 edition = "2021"
 license = "MIT"
 
 [dependencies]
 regex = "1.10.4"
 uuid = { version = "1.8.0", features = ["v4"] }
-lazy_static = "1.4.0"
 colored = "2.1.0"
 log = "0.4.21"
-
