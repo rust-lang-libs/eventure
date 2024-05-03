@@ -1,11 +1,12 @@
 use std::sync::Mutex;
+use regex::Regex;
 use crate::model::{Event, EventHandler};
 
 static HANDLER_REGISTRY: Mutex<EventHandlerRegistryImpl> = Mutex::new(EventHandlerRegistryImpl::new());
-static BROKER_CONFIGURATION: Mutex<MessageBrokerConfiguration> = Mutex::new(MessageBrokerConfiguration::new());
+static BROKER_CONFIGURATION: Mutex<MessageBrokerConfigurationInternal> = Mutex::new(MessageBrokerConfigurationInternal::new());
 
-pub trait EventHandlerRegistry {
-    fn register(&mut self, message_channel: MessageChannel, event_handler: Box<dyn EventHandler + Send>);
+trait EventHandlerRegistry {
+    fn register(&mut self, message_channel: MessageChannelInternal, event_handler: Box<dyn EventHandler + Send>);
     fn emit(&self, event: &dyn Event, channel: Option<MessageChannel>);
 }
 
@@ -40,11 +41,13 @@ pub struct MessageBrokerConfiguration {
 }
 
 pub fn setup(configuration: MessageBrokerConfiguration) {
-    BROKER_CONFIGURATION.lock().unwrap().update(configuration);
+    BROKER_CONFIGURATION.lock().unwrap().update(MessageBrokerConfigurationInternal::from(configuration));
 }
 
 pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
-    HANDLER_REGISTRY.lock().unwrap().register(message_channel, Box::new(event_handler));
+    HANDLER_REGISTRY.lock().unwrap().register(
+        MessageChannelInternal::from(message_channel),
+        Box::new(event_handler));
 }
 
 pub fn emit(event: &dyn Event) {
@@ -53,6 +56,60 @@ pub fn emit(event: &dyn Event) {
 
 pub fn emit_to_channel(event: &dyn Event, channel: MessageChannel) {
     HANDLER_REGISTRY.lock().unwrap().emit(event, Some(channel));
+}
+
+struct MessageChannelInternal {
+    channel_type: ChannelType,
+    name_regex: Option<Regex>,
+}
+
+impl MessageChannelInternal {
+    pub const fn new() -> Self {
+        MessageChannelInternal {
+            channel_type: ChannelType::TOPIC,
+            name_regex: None,
+        }
+    }
+
+    pub fn from(message_channel: MessageChannel) -> Self {
+        MessageChannelInternal {
+            channel_type: message_channel.channel_type,
+            name_regex: Some(Regex::new(message_channel.name).unwrap()),
+        }
+    }
+
+    pub fn matches(&self, channel: &MessageChannel) -> bool {
+        match &self.name_regex {
+            Some(regex) => self.channel_type == channel.channel_type && (regex.captures(channel.name).is_some()),
+            None => false
+        }
+    }
+}
+
+struct MessageBrokerConfigurationInternal {
+    message_channel: MessageChannelInternal,
+    is_async: bool,
+}
+
+impl MessageBrokerConfigurationInternal {
+    pub const fn new() -> Self {
+        MessageBrokerConfigurationInternal {
+            message_channel: MessageChannelInternal::new(),
+            is_async: false,
+        }
+    }
+
+    fn from(configuration: MessageBrokerConfiguration) -> Self {
+        MessageBrokerConfigurationInternal {
+            message_channel: MessageChannelInternal::from(configuration.message_channel),
+            is_async: configuration.is_async,
+        }
+    }
+
+    fn update(&mut self, configuration: MessageBrokerConfigurationInternal) {
+        self.message_channel = configuration.message_channel;
+        self.is_async = configuration.is_async;
+    }
 }
 
 struct EventHandlerRegistryImpl {
@@ -66,27 +123,28 @@ impl EventHandlerRegistryImpl {
 }
 
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
-    fn register(&mut self, channel: MessageChannel, handler: Box<dyn EventHandler + Send>) {
-        println!("In-memory event handler registered: {}", handler);
+    fn register(&mut self, channel: MessageChannelInternal, handler: Box<dyn EventHandler + Send>) {
+        println!("\
+        in-memory event handler registered: {}", handler);
         self.handler_configs.push(HandlerConfiguration { handler, channel });
     }
 
     fn emit(&self, event: &dyn Event, channel: Option<MessageChannel>) {
-        println!("In-memory event emitted: {}", event);
+        println!("in-memory event emitted: {}", event);
 
         match channel {
             Some(channel) =>
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
-                        println!("Channel matched");
+                        println!("channel matched");
                         config.handler.handle(event);
                     } else {
-                        println!("Channel not matched");
+                        println!("channel not matched");
                     }
                 }
             None =>
                 for config in self.handler_configs.iter() {
-                    println!("Channel matched");
+                    println!("channel matched");
                     config.handler.handle(event);
                 }
         }
@@ -97,18 +155,13 @@ impl MessageChannel {
     pub const fn new() -> Self {
         MessageChannel {
             channel_type: ChannelType::TOPIC,
-            name: "*",
+            name: ".*",
         }
     }
 
     pub fn update(&mut self, message_channel: MessageChannel) {
         self.channel_type = message_channel.channel_type;
         self.name = message_channel.name;
-    }
-
-    pub fn matches(&self, channel: &MessageChannel) -> bool {
-        self.channel_type == channel.channel_type
-            && (self.name == "*" || channel.name == "*" || self.name == channel.name)
     }
 }
 
@@ -119,14 +172,9 @@ impl MessageBrokerConfiguration {
             is_async: false,
         }
     }
-
-    pub fn update(&mut self, configuration: MessageBrokerConfiguration) {
-        self.message_channel = configuration.message_channel;
-        self.is_async = configuration.is_async;
-    }
 }
 
 struct HandlerConfiguration {
     handler: Box<dyn EventHandler + Send>,
-    channel: MessageChannel,
+    channel: MessageChannelInternal,
 }
