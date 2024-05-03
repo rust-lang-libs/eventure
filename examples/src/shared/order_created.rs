@@ -55,13 +55,13 @@ impl model::EventHandler for OrderCreatedEventHandler {
     fn handle(&self, event: &(dyn model::Event + '_)) {
         match event.as_any().downcast_ref::<OrderCreated>() {
             Some(order_create) => self.handle(order_create),
-            None => println!("Skipping...")
+            None => println!("skipping...")
         }
     }
 }
 
 impl OrderCreatedEventHandler {
     fn handle(&self, event: &OrderCreated) {
-        println!("Handling {}", event)
+        println!("handling {}", event)
     }
 }
