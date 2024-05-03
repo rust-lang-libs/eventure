@@ -3,7 +3,7 @@
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 use std::any::Any;
-use std::fmt::Display;
+use std::fmt::{Display};
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public traits
@@ -23,9 +23,10 @@ use std::fmt::Display;
 ///     customer_id: String,
 /// }
 ///
-/// impl Display for OrderCreated{
+/// impl Display for OrderCreated {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-///         todo!()
+///         write!(f, "{} event with id {}",
+///                "OrderCreated", self.event_id)
 ///     }
 /// }
 ///
@@ -59,6 +60,13 @@ pub trait Event: Display {
 ///     event_id: String,
 ///     customer_id: String,
 /// }
+///
+/// impl Display for OrderCreated {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         todo!()
+///     }
+/// }
+///
 /// impl Display for OrderCreatedEventHandler {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 ///         write!(f, "{}", "OrderEventHandler")

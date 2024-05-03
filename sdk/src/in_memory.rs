@@ -114,6 +114,7 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///
 /// # Examples
 /// ```
+/// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
 /// use eventure::{in_memory, model};
 /// use eventure::in_memory::ChannelType;
@@ -126,6 +127,30 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///     event_id: String,
 ///     customer_id: String,
 /// }
+///
+/// impl Display for OrderCreated {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         todo!()
+///     }
+/// }
+///
+/// impl model::Event for OrderCreated {
+///     fn id(&self) -> &str {
+///         &self.event_id[..]
+///     }
+///     fn name(&self) -> &str {
+///         "OrderCreated"
+///     }
+///     fn as_any(&self) -> &dyn Any {
+///         self
+///     }
+/// }
+///
+/// let order_created = OrderCreated{
+///     event_id: String::from("event_id"),
+///     customer_id: String::from("customer_id"),
+/// };
+///
 /// impl Display for OrderCreatedEventHandler {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 ///         write!(f, "{}", "OrderEventHandler")
@@ -169,9 +194,10 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 ///     customer_id: String,
 /// }
 ///
-/// impl Display for OrderCreated{
+/// impl Display for OrderCreated {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-///         todo!()
+///         write!(f, "{} event with id {}",
+///                "OrderCreated", self.event_id)
 ///     }
 /// }
 ///
@@ -213,9 +239,10 @@ pub fn emit(event: &dyn Event) {
 ///     customer_id: String,
 /// }
 ///
-/// impl Display for OrderCreated{
+/// impl Display for OrderCreated {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-///         todo!()
+///         write!(f, "{} event with id {}",
+///                "OrderCreated", self.event_id)
 ///     }
 /// }
 ///
