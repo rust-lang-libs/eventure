@@ -48,6 +48,38 @@ pub trait Event: Display {
 }
 
 /// Base event handler abstraction. It should be implemented for each event handler.
+/// # Examples
+///
+/// ```
+/// use std::fmt::{Display, Formatter};
+/// use eventure::model;
+/// struct OrderCreatedEventHandler;
+///
+/// struct OrderCreated {
+///     event_id: String,
+///     customer_id: String,
+/// }
+/// impl Display for OrderCreatedEventHandler {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         write!(f, "{}", "OrderEventHandler")
+///     }
+/// }
+///
+/// impl model::EventHandler for OrderCreatedEventHandler {
+///     fn handle(&self, event: &(dyn model::Event + '_)) {
+///         match event.as_any().downcast_ref::<OrderCreated>() {
+///             Some(order_create) => self.handle(order_create),
+///             None => println!("{}: not handling {}", "OrderCreatedEventHandler", event)
+///         }
+///     }
+/// }
+///
+/// impl OrderCreatedEventHandler {
+///     fn handle(&self, event: &OrderCreated) {
+///         println!("{}: handling {}","OrderCreatedEventHandler", event)
+///     }
+/// }
+/// ```
 pub trait EventHandler: Display {
     fn handle(&self, event: &dyn Event);
 }
