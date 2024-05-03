@@ -12,26 +12,68 @@ use colored::Colorize;
 // Public structs
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+/// Message channel definition.
+///
+/// # Examples
+/// ```
+/// use eventure::in_memory::{ChannelType, MessageChannel};
+///
+/// let message_channel = MessageChannel {
+///         channel_type: ChannelType::TOPIC,
+///         name: "Orders",
+/// };
+/// ```
 pub struct MessageChannel {
     pub channel_type: ChannelType,
     pub name: &'static str,
 }
 
+/// Channel type
 #[derive(Debug, PartialEq, Eq)]
 pub enum ChannelType {
     TOPIC,
     QUEUE,
 }
 
+/// Message broken configuration.
+///
+/// # Examples
+///
+/// ```
+/// use eventure::in_memory::{ChannelType, MessageBrokerConfiguration, MessageChannel};
+///
+/// let message_channel = MessageChannel {
+///         channel_type: ChannelType::TOPIC,
+///         name: "Orders",
+/// };
+///
+/// let message_channel = MessageChannel {
+///         channel_type: ChannelType::TOPIC,
+///         name: "Orders",
+/// };
+///
+/// let configuration = MessageBrokerConfiguration {
+///     message_channel,
+///     is_async: false,
+/// };
+/// ```
 pub struct MessageBrokerConfiguration {
-    message_channel: MessageChannel,
-    is_async: bool,
+    pub message_channel: MessageChannel,
+    pub is_async: bool,
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public functions
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+/// Creates MessageChannel.
+///
+/// # Examples
+/// ```
+/// use eventure::in_memory;
+/// use eventure::in_memory::ChannelType;
+/// let handler_channel = in_memory::message_channel(ChannelType::TOPIC, "Order");
+/// ```
 pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) -> MessageChannel {
     MessageChannel {
         channel_type,
@@ -39,6 +81,15 @@ pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) ->
     }
 }
 
+/// Creates MessageBrokerConfiguration.
+///
+/// # Examples
+///
+/// ```
+/// use eventure::in_memory;
+/// use eventure::in_memory::ChannelType;
+/// let configuration = in_memory::configuration(ChannelType::TOPIC, ".*", false);
+/// ```
 pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_async: bool) -> MessageBrokerConfiguration {
     MessageBrokerConfiguration {
         message_channel: message_channel(channel_type, channel_name),
@@ -46,20 +97,173 @@ pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_a
     }
 }
 
+/// Sets up message broker configuration by passing MessageBrokerConfiguration instance.
+///
+///  # Examples
+/// ```
+/// use eventure::in_memory;
+/// use eventure::in_memory::ChannelType;
+/// let configuration = in_memory::configuration(ChannelType::TOPIC, ".*", false);
+/// in_memory::setup(configuration);
+/// ```
 pub fn setup(configuration: MessageBrokerConfiguration) {
     BROKER_CONFIGURATION.lock().unwrap().update(MessageBrokerConfigurationInternal::from(configuration));
 }
 
+/// Registers event handler.
+///
+/// # Examples
+/// ```
+/// use std::any::Any;
+/// use std::fmt::{Display, Formatter};
+/// use eventure::{in_memory, model};
+/// use eventure::in_memory::ChannelType;
+///
+/// let handler_channel = in_memory::message_channel(ChannelType::TOPIC, "Order");
+///
+/// struct OrderCreatedEventHandler;
+///
+/// struct OrderCreated {
+///     event_id: String,
+///     customer_id: String,
+/// }
+///
+/// impl Display for OrderCreated {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         todo!()
+///     }
+/// }
+///
+/// impl model::Event for OrderCreated {
+///     fn id(&self) -> &str {
+///         &self.event_id[..]
+///     }
+///     fn name(&self) -> &str {
+///         "OrderCreated"
+///     }
+///     fn as_any(&self) -> &dyn Any {
+///         self
+///     }
+/// }
+///
+/// let order_created = OrderCreated{
+///     event_id: String::from("event_id"),
+///     customer_id: String::from("customer_id"),
+/// };
+///
+/// impl Display for OrderCreatedEventHandler {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         write!(f, "{}", "OrderEventHandler")
+///     }
+/// }
+///
+/// impl model::EventHandler for OrderCreatedEventHandler {
+///     fn handle(&self, event: &(dyn model::Event + '_)) {
+///         match event.as_any().downcast_ref::<OrderCreated>() {
+///             Some(order_create) => self.handle(order_create),
+///             None => println!("{}: not handling {}", "OrderCreatedEventHandler", event)
+///         }
+///     }
+/// }
+///
+/// impl OrderCreatedEventHandler {
+///     fn handle(&self, event: &OrderCreated) {
+///         println!("{}: handling {}","OrderCreatedEventHandler", event)
+///     }
+/// }
+///
+/// let order_created_handler = OrderCreatedEventHandler;
+/// in_memory::register(handler_channel, order_created_handler);
+/// ```
 pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
     HANDLER_REGISTRY.lock().unwrap().register(
         MessageChannelInternal::from(message_channel),
         Box::new(event_handler));
 }
 
+/// Emits event without specifying message channel.
+///
+/// # Examples
+/// ```
+/// use std::any::Any;
+/// use std::fmt::{Display, Formatter};
+/// use eventure::{in_memory, model};
+///
+/// struct OrderCreated {
+///     event_id: String,
+///     customer_id: String,
+/// }
+///
+/// impl Display for OrderCreated {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         write!(f, "{} event with id {}",
+///                "OrderCreated", self.event_id)
+///     }
+/// }
+///
+/// impl model::Event for OrderCreated {
+///     fn id(&self) -> &str {
+///         &self.event_id[..]
+///     }
+///     fn name(&self) -> &str {
+///         "OrderCreated"
+///     }
+///     fn as_any(&self) -> &dyn Any {
+///         self
+///     }
+/// }
+///
+/// let order_created = OrderCreated{
+///     event_id: String::from("event_id"),
+///     customer_id: String::from("customer_id"),
+/// };
+///
+/// in_memory::emit(&order_created);
+/// ```
 pub fn emit(event: &dyn Event) {
     HANDLER_REGISTRY.lock().unwrap().emit(event, None);
 }
 
+/// Emits event with specifying message channel.
+///
+/// # Examples
+/// ```
+/// use std::any::Any;
+/// use std::fmt::{Display, Formatter};
+/// use eventure::{in_memory, model};
+/// use eventure::in_memory::ChannelType::QUEUE;
+/// use eventure::in_memory::MessageChannel;
+///
+/// struct OrderCreated {
+///     event_id: String,
+///     customer_id: String,
+/// }
+///
+/// impl Display for OrderCreated {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         write!(f, "{} event with id {}",
+///                "OrderCreated", self.event_id)
+///     }
+/// }
+///
+/// impl model::Event for OrderCreated {
+///     fn id(&self) -> &str {
+///         &self.event_id[..]
+///     }
+///     fn name(&self) -> &str {
+///         "OrderCreated"
+///     }
+///     fn as_any(&self) -> &dyn Any {
+///         self
+///     }
+/// }
+///
+/// let order_created = OrderCreated{
+///     event_id: String::from("event_id"),
+///     customer_id: String::from("customer_id"),
+/// };
+/// in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: QUEUE, name: ".*" });
+/// ```
 pub fn emit_to_channel(event: &dyn Event, channel: MessageChannel) {
     HANDLER_REGISTRY.lock().unwrap().emit(event, Some(channel));
 }
@@ -160,37 +364,30 @@ impl EventHandlerRegistryImpl {
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
     fn register(&mut self, channel: MessageChannelInternal, handler: Box<dyn EventHandler + Send>) {
         println!("{}: in-memory event handler registered: {}",
-                 "EventHandlerRegistry".bold().green(),
-                 handler);
+                 "EventHandlerRegistry".bold().green(), handler);
         self.handler_configs.push(HandlerConfiguration { handler, channel });
     }
 
     fn emit(&self, event: &dyn Event, channel_option: Option<MessageChannel>) {
         println!("{}: in-memory event emitted: {}",
-                 "EventHandlerRegistry".bold().green(),
-                 event);
+                 "EventHandlerRegistry".bold().green(), event);
 
         match channel_option {
             Some(channel) =>
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
                         println!("{}: channel matched (handler: {}, channel: {})",
-                                 "EventHandlerRegistry".bold().green(),
-                                 config.handler,
-                                 channel);
+                                 "EventHandlerRegistry".bold().green(), config.handler, channel);
                         config.handler.handle(event);
                     } else {
                         println!("{}: channel not matched (handler: {}, channel: {})",
-                                 "EventHandlerRegistry".bold().green(),
-                                 config.handler,
-                                 channel);
+                                 "EventHandlerRegistry".bold().green(), config.handler, channel);
                     }
                 }
             None =>
                 for config in self.handler_configs.iter() {
                     println!("{}: not-specified channel matched by default (handler: {})",
-                             "EventHandlerRegistry".bold().green(),
-                             config.handler);
+                             "EventHandlerRegistry".bold().green(), config.handler);
                     config.handler.handle(event);
                 }
         }
