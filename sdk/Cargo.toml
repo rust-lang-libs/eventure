@@ -11,3 +11,4 @@ license = "MIT"
 regex = "1.10.4"
 uuid = { version = "1.8.0", features = ["v4"] }
 lazy_static = "1.4.0"
+colored = "2.1.0"

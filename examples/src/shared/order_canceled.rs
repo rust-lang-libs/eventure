@@ -2,6 +2,7 @@ use std::any::Any;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 use eventure::model;
+use colored::Colorize;
 
 #[allow(dead_code)]
 pub struct OrderCanceled {
@@ -22,14 +23,16 @@ pub fn handler() -> OrderCanceledEventHandler {
 
 impl OrderCanceled {
     pub fn new(customer_id: String) -> OrderCanceled {
-        let event_id =  String::from(&Uuid::new_v4().to_string()[..6]);
+        let event_id = String::from(&Uuid::new_v4().to_string()[..6]);
         OrderCanceled { event_id, customer_id }
     }
 }
 
 impl Display for OrderCanceled {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "OrderCanceled event with id {}", self.event_id)
+        write!(f, "{} event with id {}",
+               "OrderCanceled".bold().purple(),
+               self.event_id)
     }
 }
 
