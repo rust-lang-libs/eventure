@@ -6,6 +6,7 @@ use eventure::in_memory::ChannelType::{QUEUE, TOPIC};
 
 fn main() {
     println!();
+
     let order_created = order_created::create();
     let order_canceled = order_canceled::create();
     let order_created_handler = order_created::handler();
