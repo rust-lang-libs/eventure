@@ -131,7 +131,7 @@ impl MessageChannelInternal {
 }
 
 impl MessageBrokerConfigurationInternal {
-    pub const fn new() -> Self {
+    const fn new() -> Self {
         MessageBrokerConfigurationInternal {
             message_channel: MessageChannelInternal::new(),
             is_async: false,
@@ -152,7 +152,7 @@ impl MessageBrokerConfigurationInternal {
 }
 
 impl EventHandlerRegistryImpl {
-    pub const fn new() -> Self {
+    const fn new() -> Self {
         EventHandlerRegistryImpl { handler_configs: Vec::new() }
     }
 }
