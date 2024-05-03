@@ -25,5 +25,3 @@ applications (microservices, typically).
 ### In-Memory messages
 `cargo run --example in-memory`
 
-### Kafka messages
-`cargo run --example kafka`
