@@ -202,9 +202,39 @@ pub fn emit(event: &dyn Event) {
 ///
 /// # Examples
 /// ```
-/// use eventure::in_memory;
+/// use std::any::Any;
+/// use std::fmt::{Display, Formatter};
+/// use eventure::{in_memory, model};
 /// use eventure::in_memory::ChannelType::QUEUE;
 /// use eventure::in_memory::MessageChannel;
+///
+/// struct OrderCreated {
+///     event_id: String,
+///     customer_id: String,
+/// }
+///
+/// impl Display for OrderCreated{
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         todo!()
+///     }
+/// }
+///
+/// impl model::Event for OrderCreated {
+///     fn id(&self) -> &str {
+///         &self.event_id[..]
+///     }
+///     fn name(&self) -> &str {
+///         "OrderCreated"
+///     }
+///     fn as_any(&self) -> &dyn Any {
+///         self
+///     }
+/// }
+///
+/// let order_created = OrderCreated{
+///     event_id: String::from("event_id"),
+///     customer_id: String::from("customer_id"),
+/// };
 /// in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: QUEUE, name: ".*" });
 /// ```
 pub fn emit_to_channel(event: &dyn Event, channel: MessageChannel) {
