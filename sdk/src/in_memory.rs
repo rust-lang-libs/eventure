@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 use regex::Regex;
 use crate::model::{Event, EventHandler};
+use colored::Colorize;
 
 static HANDLER_REGISTRY: Mutex<EventHandlerRegistryImpl> = Mutex::new(EventHandlerRegistryImpl::new());
 static BROKER_CONFIGURATION: Mutex<MessageBrokerConfigurationInternal> = Mutex::new(MessageBrokerConfigurationInternal::new());
@@ -30,7 +31,7 @@ pub struct MessageChannel {
     pub name: &'static str,
 }
 
-#[derive(Debug,PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ChannelType {
     TOPIC,
     QUEUE,
@@ -125,26 +126,38 @@ impl EventHandlerRegistryImpl {
 
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
     fn register(&mut self, channel: MessageChannelInternal, handler: Box<dyn EventHandler + Send>) {
-        println!("EventHandlerRegistry: in-memory event handler registered: {}", handler);
+        println!("{}: in-memory event handler registered: {}",
+                 "EventHandlerRegistry".bold().green(),
+                 handler);
         self.handler_configs.push(HandlerConfiguration { handler, channel });
     }
 
     fn emit(&self, event: &dyn Event, channel_option: Option<MessageChannel>) {
-        println!("EventHandlerRegistry: in-memory event emitted: {}", event);
+        println!("{}: in-memory event emitted: {}",
+                 "EventHandlerRegistry".bold().green(),
+                 event);
 
         match channel_option {
             Some(channel) =>
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
-                        println!("EventHandlerRegistry: channel matched (handler: {}, channel: {})", config.handler, channel);
+                        println!("{}: channel matched (handler: {}, channel: {})",
+                                 "EventHandlerRegistry".bold().green(),
+                                 config.handler,
+                                 channel);
                         config.handler.handle(event);
                     } else {
-                        println!("EventHandlerRegistry: channel not matched (handler: {}, channel: {})", config.handler, channel);
+                        println!("{}: channel not matched (handler: {}, channel: {})",
+                                 "EventHandlerRegistry".bold().green(),
+                                 config.handler,
+                                 channel);
                     }
                 }
             None =>
                 for config in self.handler_configs.iter() {
-                    println!("EventHandlerRegistry: not-specified channel matched by default (handler: {})", config.handler);
+                    println!("{}: not-specified channel matched by default (handler: {})",
+                             "EventHandlerRegistry".bold().green(),
+                             config.handler);
                     config.handler.handle(event);
                 }
         }
@@ -167,7 +180,7 @@ impl MessageChannel {
 
 impl Display for MessageChannel {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{:?},{}]", self.channel_type, self.name)
+        write!(f, "[{:?},{:?}]", self.channel_type, self.name)
     }
 }
 

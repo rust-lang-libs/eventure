@@ -2,6 +2,7 @@ use std::any::Any;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 use eventure::model;
+use colored::Colorize;
 
 #[allow(dead_code)]
 pub struct OrderCreated {
@@ -29,7 +30,9 @@ impl OrderCreated {
 
 impl Display for OrderCreated {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "OrderCreated event with id {}", self.event_id)
+        write!(f, "{} event with id {}",
+               "OrderCreated".bold().purple(),
+               self.event_id)
     }
 }
 
@@ -47,7 +50,7 @@ impl model::Event for OrderCreated {
 
 impl Display for OrderCreatedEventHandler {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "OrderEventHandler")
+        write!(f, "{}", "OrderEventHandler".bold().purple())
     }
 }
 
@@ -55,13 +58,13 @@ impl model::EventHandler for OrderCreatedEventHandler {
     fn handle(&self, event: &(dyn model::Event + '_)) {
         match event.as_any().downcast_ref::<OrderCreated>() {
             Some(order_create) => self.handle(order_create),
-            None => println!("OrderCreatedEventHandler: not handling {}", event)
+            None => println!("{}: not handling {}", "OrderCreatedEventHandler".bold().green(), event)
         }
     }
 }
 
 impl OrderCreatedEventHandler {
     fn handle(&self, event: &OrderCreated) {
-        println!("OrderCreatedEventHandler: handling {}", event)
+        println!("{}: handling {}", "OrderCreatedEventHandler".bold().green(), event)
     }
 }
