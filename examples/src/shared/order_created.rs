@@ -10,7 +10,7 @@ pub struct OrderCreated {
 }
 
 pub fn create() -> OrderCreated {
-    let customer_id = Uuid::new_v4().to_string();
+    let customer_id = String::from(&Uuid::new_v4().to_string()[..6]);
     OrderCreated::new(customer_id)
 }
 
@@ -22,14 +22,14 @@ pub fn handler() -> OrderCreatedEventHandler {
 
 impl OrderCreated {
     pub fn new(customer_id: String) -> OrderCreated {
-        let event_id = Uuid::new_v4().to_string();
+        let event_id = String::from(&Uuid::new_v4().to_string()[..6]);
         OrderCreated { event_id, customer_id }
     }
 }
 
 impl Display for OrderCreated {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "OrderCreated with id {}", self.event_id)
+        write!(f, "OrderCreated event with id {}", self.event_id)
     }
 }
 
@@ -55,13 +55,13 @@ impl model::EventHandler for OrderCreatedEventHandler {
     fn handle(&self, event: &(dyn model::Event + '_)) {
         match event.as_any().downcast_ref::<OrderCreated>() {
             Some(order_create) => self.handle(order_create),
-            None => println!("skipping...")
+            None => println!("OrderCreatedEventHandler: not handling {}", event)
         }
     }
 }
 
 impl OrderCreatedEventHandler {
     fn handle(&self, event: &OrderCreated) {
-        println!("handling {}", event)
+        println!("OrderCreatedEventHandler: handling {}", event)
     }
 }
