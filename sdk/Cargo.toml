@@ -12,3 +12,6 @@ regex = "1.10.4"
 uuid = { version = "1.8.0", features = ["v4"] }
 colored = "2.1.0"
 log = "0.4.21"
+rdkafka = "0.36.2"
+tokio = "1.37.0"
+clap = "4.5.4"
