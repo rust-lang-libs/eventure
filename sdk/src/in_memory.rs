@@ -186,6 +186,79 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
         Box::new(event_handler));
 }
 
+/// Unregisters event handler.
+///
+/// # Examples
+/// ```
+/// use std::any::Any;
+/// use std::fmt::{Display, Formatter};
+///
+/// use eventure::{in_memory, model};
+/// use eventure::in_memory::ChannelType;
+///
+/// let handler_channel = in_memory::message_channel(ChannelType::TOPIC, "Order");
+///
+/// struct OrderCreatedEventHandler;
+///
+/// struct OrderCreated {
+///     event_id: String,
+///     customer_id: String,
+/// }
+///
+/// impl Display for OrderCreated {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         todo!()
+///     }
+/// }
+///
+/// impl model::Event for OrderCreated {
+///     fn id(&self) -> &str {
+///         &self.event_id[..]
+///     }
+///     fn name(&self) -> &str {
+///         "OrderCreated"
+///     }
+///     fn as_any(&self) -> &dyn Any {
+///         self
+///     }
+/// }
+///
+/// let order_created = OrderCreated{
+///     event_id: String::from("event_id"),
+///     customer_id: String::from("customer_id"),
+/// };
+///
+/// impl Display for OrderCreatedEventHandler {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+///         write!(f, "{}", "OrderEventHandler")
+///     }
+/// }
+///
+/// impl model::EventHandler for OrderCreatedEventHandler {
+///     fn handle(&self, event: &(dyn model::Event + '_)) {
+///         match event.as_any().downcast_ref::<OrderCreated>() {
+///             Some(order_create) => self.handle(order_create),
+///             None => println!("{}: not handling {}", "OrderCreatedEventHandler", event)
+///         }
+///     }
+///
+///     fn id(&self) -> String {
+///         String::from("OrderCreatedEventHandler")
+///     }
+/// }
+///
+/// impl OrderCreatedEventHandler {
+///     fn handle(&self, event: &OrderCreated) {
+///         println!("{}: handling {}","OrderCreatedEventHandler", event)
+///     }
+/// }
+///
+/// let order_created_handler = OrderCreatedEventHandler;
+/// in_memory::register(handler_channel, order_created_handler);
+///
+/// let order_created_handler = OrderCreatedEventHandler;
+/// in_memory::unregister(order_created_handler);
+/// ```
 pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
     HANDLER_REGISTRY.lock().unwrap().unregister(Box::new(event_handler));
 }
@@ -393,19 +466,23 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
             Some(channel) =>
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
-                        info!(target: "EventHandlerRegistry", "channel matched (handler: {}, channel: {})", config.handler, channel);
+                        info!(target: "EventHandlerRegistry",
+                            "channel matched (handler: {}, channel: {})", config.handler, channel);
                         config.handler.handle(event);
                         if channel.channel_type == ChannelType::QUEUE {
-                            debug!(target: "EventHandlerRegistry", "event handlers loop stopped for event {} in QUEUE", event);
+                            debug!(target: "EventHandlerRegistry",
+                                "event handlers loop stopped for event {} in QUEUE", event);
                             break;
                         }
                     } else {
-                        debug!(target: "EventHandlerRegistry", "channel not matched (handler: {}, channel: {})", config.handler, channel);
+                        debug!(target: "EventHandlerRegistry",
+                            "channel not matched (handler: {}, channel: {})", config.handler, channel);
                     }
                 }
             None =>
                 for config in self.handler_configs.iter() {
-                    info!(target: "EventHandlerRegistry", "not-specified channel matched by default (handler: {})", config.handler);
+                    info!(target: "EventHandlerRegistry",
+                        "not-specified channel matched by default (handler: {})", config.handler);
                     config.handler.handle(event);
                 }
         }
