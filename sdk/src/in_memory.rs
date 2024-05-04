@@ -374,6 +374,11 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
                         info!(target: "EventHandlerRegistry", "channel matched (handler: {}, channel: {})", config.handler, channel);
+                        config.handler.handle(event);
+                        if channel.channel_type == ChannelType::QUEUE {
+                            info!(target: "EventHandlerRegistry", "event handlers loop stopped for event {} in QUEUE", event);
+                            break;
+                        }
                     } else {
                         info!(target: "EventHandlerRegistry", "channel not matched (handler: {}, channel: {})", config.handler, channel);
                     }
