@@ -2,6 +2,8 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+mod internals;
+
 use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
