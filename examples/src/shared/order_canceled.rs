@@ -45,7 +45,7 @@ impl OrderCanceled {
 
 impl Display for OrderCanceled {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} event with id {}", common::color_string("OrderCanceled"), self.event_id)
+        write!(f, "{} event, id {}", common::color_string("OrderCanceled"), self.event_id)
     }
 }
 

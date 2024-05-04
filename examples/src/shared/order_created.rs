@@ -50,7 +50,7 @@ impl OrderCreated {
 
 impl Display for OrderCreated {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} event with id {}",
+        write!(f, "{} event, id {}",
                common::color_string("OrderCreated"),
                self.event_id)
     }
@@ -78,7 +78,7 @@ impl model::EventHandler for OrderCreatedEventHandler {
     fn handle(&self, event: &(dyn model::Event + '_)) {
         match event.as_any().downcast_ref::<OrderCreated>() {
             Some(order_create) => self.handle(order_create),
-            None => info!(target: "OrderCreatedEventHandler", "not handling {}", event)
+            None => info!(target: "OrderCreatedEventHandler", "not handling (type mismatch) event: {}", event)
         }
     }
 
