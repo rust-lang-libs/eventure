@@ -19,20 +19,24 @@ fn main() {
 
     let order_created = order_created::create();
     let order_canceled = order_canceled::create();
-    let order_created_handler = order_created::handler();
 
     let configuration = in_memory::configuration(TOPIC, ".*", false);
     in_memory::setup(configuration);
 
-    let handler_channel = in_memory::message_channel(TOPIC, "Order");
-    in_memory::register(handler_channel, order_created_handler);
+    let handler_topic_channel = in_memory::message_channel(TOPIC, "Order");
+    let order_created_handler = order_created::handler();
+    in_memory::register(handler_topic_channel, order_created_handler);
+
+    let handler_queue_channel = in_memory::message_channel(QUEUE, "Order");
+    let order_created_handler = order_created::handler();
+    in_memory::register(handler_queue_channel, order_created_handler);
 
     in_memory::emit(&order_created);
     in_memory::emit(&order_canceled);
-    in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: QUEUE, name: ".*" });
     in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: TOPIC, name: "Account.*" });
     in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: TOPIC, name: "*" });
     in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: TOPIC, name: "Orders" });
+    in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: QUEUE, name: "Orders" });
 
     println!();
 }
