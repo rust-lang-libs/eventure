@@ -131,7 +131,8 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///
 /// impl Display for OrderCreated {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-///         todo!()
+///         write!(f, "{} event with id {}",
+///                "OrderCreated", self.event_id)
 ///     }
 /// }
 ///
@@ -167,7 +168,7 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///     }
 ///
 ///     fn id(&self) -> String {
-///         todo!()
+///         String::from("OrderCreatedEventHandler")
 ///     }
 /// }
 ///
@@ -207,7 +208,8 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 ///
 /// impl Display for OrderCreated {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-///         todo!()
+///         write!(f, "{} event with id {}",
+///                "OrderCreated", self.event_id)
 ///     }
 /// }
 ///
