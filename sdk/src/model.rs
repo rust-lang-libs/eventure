@@ -2,6 +2,8 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+//! Core abstractions shared amongst different implementations/integrations.
+
 use std::any::Any;
 use std::fmt::{Display};
 

@@ -2,6 +2,10 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+//! In-Memory message broken implementation.
+//!
+//! At the moment only synchronous mode is supported (for queues and topics).
+
 mod internals;
 
 use crate::model::{Event, EventHandler};
@@ -266,7 +270,6 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
     HANDLER_REGISTRY.lock().unwrap().unregister(Box::new(event_handler));
 }
-
 /// Emits event without specifying message channel.
 ///
 /// # Examples
