@@ -165,6 +165,10 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///             None => println!("{}: not handling {}", "OrderCreatedEventHandler", event)
 ///         }
 ///     }
+///
+///     fn id(&self) -> String {
+///         todo!()
+///     }
 /// }
 ///
 /// impl OrderCreatedEventHandler {
@@ -180,6 +184,10 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
     HANDLER_REGISTRY.lock().unwrap().register(
         MessageChannelInternal::from(message_channel),
         Box::new(event_handler));
+}
+
+pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
+    HANDLER_REGISTRY.lock().unwrap().unregister(Box::new(event_handler));
 }
 
 /// Emits event without specifying message channel.
@@ -305,6 +313,7 @@ struct HandlerConfiguration {
 
 trait EventHandlerRegistry {
     fn register(&mut self, message_channel: MessageChannelInternal, event_handler: Box<dyn EventHandler + Send>);
+    fn unregister(&mut self, event_handler: Box<dyn EventHandler + Send>);
     fn emit(&self, event: &dyn Event, channel: Option<MessageChannel>);
 }
 
@@ -366,6 +375,16 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
     fn register(&mut self, channel: MessageChannelInternal, handler: Box<dyn EventHandler + Send>) {
         info!(target: "EventHandlerRegistry", "in-memory event handler registered: {}",handler);
         self.handler_configs.push(HandlerConfiguration { handler, channel });
+    }
+
+    fn unregister(&mut self, event_handler: Box<dyn EventHandler + Send>) {
+        let removed = self.handler_configs.iter()
+            .position(|eh| *eh.handler.id() == event_handler.id())
+            .map(|e| self.handler_configs.remove(e))
+            .is_some();
+        if removed {
+            info!(target: "EventHandlerRegistry", "event handler unregistered: {}", event_handler);
+        }
     }
 
     fn emit(&self, event: &dyn Event, channel_option: Option<MessageChannel>) {

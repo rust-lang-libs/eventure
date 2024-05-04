@@ -18,7 +18,9 @@ pub struct OrderCreated {
     customer_id: String,
 }
 
-pub struct OrderCreatedEventHandler;
+pub struct OrderCreatedEventHandler {
+    id: String
+}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public functions
@@ -30,7 +32,9 @@ pub fn create() -> OrderCreated {
 }
 
 pub fn handler() -> OrderCreatedEventHandler {
-    OrderCreatedEventHandler
+    OrderCreatedEventHandler {
+        id: String::from("OrderCreatedEventHandler")
+    }
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -76,6 +80,10 @@ impl model::EventHandler for OrderCreatedEventHandler {
             Some(order_create) => self.handle(order_create),
             None => info!(target: "OrderCreatedEventHandler", "not handling {}", event)
         }
+    }
+
+    fn id(&self) -> String {
+        String::from(&self.id)
     }
 }
 

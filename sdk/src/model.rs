@@ -55,7 +55,10 @@ pub trait Event: Display {
 /// use std::fmt::{Display, Formatter};
 /// use log::info;
 /// use eventure::model;
-/// struct OrderCreatedEventHandler;
+///
+/// struct OrderCreatedEventHandler {
+///    id: String
+///}
 ///
 /// struct OrderCreated {
 ///     event_id: String,
@@ -81,7 +84,12 @@ pub trait Event: Display {
 ///             None => info!(target: "OrderCreatedEventHandler", "not handling {}", event)
 ///         }
 ///     }
+///
+///     fn id(&self) -> String {
+///         String::from(&self.id)
+///     }
 /// }
+///
 ///
 /// impl OrderCreatedEventHandler {
 ///     fn handle(&self, event: &OrderCreated) {
@@ -91,4 +99,5 @@ pub trait Event: Display {
 /// ```
 pub trait EventHandler: Display {
     fn handle(&self, event: &dyn Event);
+    fn id(&self) -> String;
 }
