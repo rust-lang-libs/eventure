@@ -22,6 +22,9 @@ applications (microservices, typically).
 `cargo test`
 
 ## Running examples
+
+### Getting started
+`cargo run --example getting-started`
+
 ### In-Memory messages
 `cargo run --example in-memory`
-
