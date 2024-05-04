@@ -454,8 +454,8 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
 
     fn unregister(&mut self, event_handler: Box<dyn EventHandler + Send>) {
         let removed = self.handler_configs.iter()
-            .position(|eh| *eh.handler.id() == event_handler.id())
-            .map(|e| self.handler_configs.remove(e))
+            .position(|config| *config.handler.id() == event_handler.id())
+            .map(|config| self.handler_configs.remove(config))
             .is_some();
         if removed {
             info!(target: "EventHandlerRegistry", "event handler unregistered: {}", event_handler);
