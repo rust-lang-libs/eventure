@@ -6,7 +6,6 @@ use crate::shared::common;
 use eventure::model;
 use std::any::Any;
 use std::fmt::{Display, Formatter};
-use colored::Colorize;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs
@@ -46,8 +45,7 @@ impl OrderCanceled {
 
 impl Display for OrderCanceled {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} event with id {}",
-               "OrderCanceled".bold().yellow().italic().underline(), self.event_id)
+        write!(f, "{} event with id {}", common::color_string("OrderCanceled"), self.event_id)
     }
 }
 

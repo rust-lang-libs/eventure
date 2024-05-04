@@ -6,7 +6,7 @@ use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 use regex::Regex;
-use log::{info};
+use log::{debug, info};
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs
@@ -107,6 +107,7 @@ pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_a
 /// in_memory::setup(configuration);
 /// ```
 pub fn setup(configuration: MessageBrokerConfiguration) {
+    info!(target: "MessageBrokerConfiguration", "setting up: {}",configuration);
     BROKER_CONFIGURATION.lock().unwrap().update(MessageBrokerConfigurationInternal::from(configuration));
 }
 
@@ -376,11 +377,11 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
                         info!(target: "EventHandlerRegistry", "channel matched (handler: {}, channel: {})", config.handler, channel);
                         config.handler.handle(event);
                         if channel.channel_type == ChannelType::QUEUE {
-                            info!(target: "EventHandlerRegistry", "event handlers loop stopped for event {} in QUEUE", event);
+                            debug!(target: "EventHandlerRegistry", "event handlers loop stopped for event {} in QUEUE", event);
                             break;
                         }
                     } else {
-                        info!(target: "EventHandlerRegistry", "channel not matched (handler: {}, channel: {})", config.handler, channel);
+                        debug!(target: "EventHandlerRegistry", "channel not matched (handler: {}, channel: {})", config.handler, channel);
                     }
                 }
             None =>
@@ -398,4 +399,8 @@ impl Display for MessageChannel {
     }
 }
 
-
+impl Display for MessageBrokerConfiguration {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[default-channel:{},async:{}]", self.message_channel, self.is_async)
+    }
+}

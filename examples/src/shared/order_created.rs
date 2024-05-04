@@ -6,7 +6,6 @@ use crate::shared::common;
 use eventure::model;
 use std::any::Any;
 use std::fmt::{Display, Formatter};
-use colored::Colorize;
 use log::info;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -48,7 +47,7 @@ impl OrderCreated {
 impl Display for OrderCreated {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} event with id {}",
-               "OrderCreated".bold().yellow().italic().underline(),
+               common::color_string("OrderCreated"),
                self.event_id)
     }
 }
@@ -67,7 +66,7 @@ impl model::Event for OrderCreated {
 
 impl Display for OrderCreatedEventHandler {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", "OrderEventHandler".bold().yellow().italic().underline())
+        write!(f, "{}", common::color_string("OrderEventHandler"))
     }
 }
 
