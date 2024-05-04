@@ -15,7 +15,7 @@ use eventure::in_memory::ChannelType::{QUEUE, TOPIC};
 
 fn main() {
     println!();
-    SimpleLogger::new().init().unwrap();
+    init_logger();
 
     let order_created = order_created::create();
     let order_canceled = order_canceled::create();
@@ -35,4 +35,8 @@ fn main() {
     in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: TOPIC, name: "Orders" });
 
     println!();
+}
+
+fn init_logger() {
+    SimpleLogger::new().init().unwrap();
 }

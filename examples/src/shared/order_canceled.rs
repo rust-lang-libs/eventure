@@ -2,10 +2,10 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+use crate::shared::common;
 use eventure::model;
 use std::any::Any;
 use std::fmt::{Display, Formatter};
-use uuid::Uuid;
 use colored::Colorize;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ pub struct OrderCanceledEventHandler;
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 pub fn create() -> OrderCanceled {
-    let customer_id = String::from(&Uuid::new_v4().to_string()[..6]);
+    let customer_id = common::generate_id();
     OrderCanceled::new(customer_id)
 }
 
@@ -39,7 +39,7 @@ pub fn handler() -> OrderCanceledEventHandler {
 
 impl OrderCanceled {
     fn new(customer_id: String) -> OrderCanceled {
-        let event_id = String::from(&Uuid::new_v4().to_string()[..6]);
+        let event_id = common::generate_id();
         OrderCanceled { event_id, customer_id }
     }
 }
