@@ -264,6 +264,7 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
     HANDLER_REGISTRY.lock().unwrap().unregister(Box::new(event_handler));
 }
+
 /// Emits event without specifying message channel.
 ///
 /// # Examples
@@ -412,7 +413,8 @@ impl MessageChannelInternal {
 
     fn matches(&self, channel: &MessageChannel) -> bool {
         match &self.name_regex {
-            Some(regex) => self.channel_type == channel.channel_type && (regex.captures(channel.name).is_some()),
+            Some(regex) => self.channel_type == channel.channel_type
+                && (regex.captures(channel.name).is_some() || channel.name == "*"),
             None => false
         }
     }
@@ -468,7 +470,7 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
                         info!(target: "EventHandlerRegistry",
-                            "channel matched (handler: {}, channel: {})", config.handler, channel);
+                            "channel matched (handler: {}, channel: {}, event: {})", config.handler, channel, event);
                         config.handler.handle(event);
                         if channel.channel_type == ChannelType::QUEUE {
                             debug!(target: "EventHandlerRegistry",
@@ -477,13 +479,13 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
                         }
                     } else {
                         debug!(target: "EventHandlerRegistry",
-                            "channel not matched (handler: {}, channel: {})", config.handler, channel);
+                            "channel not matched (handler: {}, channel: {}, event: {})", config.handler, channel, event);
                     }
                 }
             None =>
                 for config in self.handler_configs.iter() {
                     info!(target: "EventHandlerRegistry",
-                        "not-specified channel matched by default (handler: {})", config.handler);
+                        "not-specified channel matched by default (handler: {}, event: {})", config.handler, event);
                     config.handler.handle(event);
                 }
         }
