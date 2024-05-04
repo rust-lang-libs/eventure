@@ -39,6 +39,13 @@ fn main() {
     in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: TOPIC, name: "Orders" });
     in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: QUEUE, name: "Orders" });
 
+    let order_created_handler = order_created::handler();
+    in_memory::unregister(order_created_handler);
+    let order_created_handler = order_created::handler();
+    in_memory::unregister(order_created_handler);
+
+    in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: QUEUE, name: "Orders" });
+
     println!();
 }
 
