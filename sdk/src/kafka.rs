@@ -2,5 +2,7 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+//! Apache Kafka integration. Work in progress, at the moment.
+
 mod consumer;
 mod producer;
