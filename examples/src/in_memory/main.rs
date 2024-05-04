@@ -2,6 +2,7 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+use log::LevelFilter;
 use simple_logger::SimpleLogger;
 use examples::shared::order_created;
 use examples::shared::order_canceled;
@@ -42,5 +43,8 @@ fn main() {
 }
 
 fn init_logger() {
-    SimpleLogger::new().init().unwrap();
+    SimpleLogger::new()
+        .with_colors(false)
+        .with_level(LevelFilter::Debug)
+        .init().unwrap();
 }

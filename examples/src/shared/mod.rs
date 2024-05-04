@@ -4,4 +4,4 @@
 
 pub mod order_created;
 pub mod order_canceled;
-pub mod common;
+mod common;

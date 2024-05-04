@@ -19,7 +19,7 @@ applications (microservices, typically).
 `cargo build`
 
 ## Testing project
-`cargo build`
+`cargo test`
 
 ## Running examples
 ### In-Memory messages
