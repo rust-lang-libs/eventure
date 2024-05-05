@@ -18,6 +18,7 @@ use std::fmt::{Display};
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Serialize, Serializer};
 /// use eventure::model;
 ///
 /// pub struct OrderCreated {
@@ -32,6 +33,11 @@ use std::fmt::{Display};
 ///     }
 /// }
 ///
+/// impl Serialize for OrderCreated {
+///     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+///         todo!()
+///     }}
+///
 /// impl model::Event for OrderCreated {
 ///     fn id(&self) -> &str {
 ///         &self.event_id[..]
@@ -42,12 +48,16 @@ use std::fmt::{Display};
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
 ///     }
+///     fn to_json(&self) -> String {
+///         todo!()
+///     }
 /// }
 /// ```
-pub trait Event: Display {
+pub trait Event: Display  {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
     fn as_any(&self) -> &dyn Any;
+    fn to_json(&self) -> String;
 }
 
 /// Base event handler abstraction. It should be implemented for each event handler.

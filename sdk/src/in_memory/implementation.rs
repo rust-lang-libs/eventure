@@ -114,12 +114,15 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 /// use eventure::{in_memory, model};
+/// use model::Event;
 ///
 /// let handler_channel = in_memory::message_channel(in_memory::ChannelType::TOPIC, "Order");
 ///
 /// struct OrderCreatedEventHandler;
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -141,6 +144,9 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         serde_json::to_string(&self).unwrap()
 ///     }
 /// }
 ///
@@ -189,6 +195,7 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 ///
 /// use eventure::{in_memory, model};
 ///
@@ -196,6 +203,7 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 ///
 /// struct OrderCreatedEventHandler;
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -217,6 +225,9 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         serde_json::to_string(&self).unwrap()
 ///     }
 /// }
 ///
@@ -266,8 +277,10 @@ pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 /// use eventure::{in_memory, model};
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -280,6 +293,7 @@ pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
 ///     }
 /// }
 ///
+///
 /// impl model::Event for OrderCreated {
 ///     fn id(&self) -> &str {
 ///         &self.event_id[..]
@@ -289,6 +303,9 @@ pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         todo!()
 ///     }
 /// }
 ///
@@ -309,8 +326,10 @@ pub fn emit(event: &dyn Event) {
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 /// use eventure::{in_memory, model};
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -332,6 +351,9 @@ pub fn emit(event: &dyn Event) {
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         todo!()
 ///     }
 /// }
 ///

@@ -106,12 +106,14 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 /// use eventure::{kafka, model};
 ///
 /// let handler_channel = kafka::message_channel("Orders", 0);
 ///
 /// struct OrderCreatedEventHandler;
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -133,6 +135,9 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         todo!()
 ///     }
 /// }
 ///
@@ -179,12 +184,14 @@ pub fn register(_message_channel: MessageChannel, _event_handler: impl EventHand
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 /// use eventure::{kafka, model};
 ///
 /// let handler_channel = kafka::message_channel("Orders", 0);
 ///
 /// struct OrderCreatedEventHandler;
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -206,6 +213,9 @@ pub fn register(_message_channel: MessageChannel, _event_handler: impl EventHand
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         todo!()
 ///     }
 /// }
 ///
@@ -255,8 +265,10 @@ pub fn unregister(_event_handler: impl EventHandler + Send + 'static) {
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 /// use eventure::{kafka, model};
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -278,6 +290,9 @@ pub fn unregister(_event_handler: impl EventHandler + Send + 'static) {
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         todo!()
 ///     }
 /// }
 ///
@@ -298,8 +313,10 @@ pub fn emit(_event: &dyn Event) {
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
+/// use serde::{Deserialize, Serialize};
 /// use eventure::{kafka, model};
 ///
+/// #[derive(Serialize, Deserialize)]
 /// struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -321,6 +338,9 @@ pub fn emit(_event: &dyn Event) {
 ///     }
 ///     fn as_any(&self) -> &dyn Any {
 ///         self
+///     }
+///     fn to_json(&self) -> String {
+///         todo!()
 ///     }
 /// }
 ///
