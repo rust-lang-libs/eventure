@@ -10,7 +10,7 @@ use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use log::info;
 
-/// Message channel definition.
+/// Kafka message channel definition.
 ///
 /// # Examples
 /// ```
@@ -26,7 +26,7 @@ pub struct MessageChannel {
     pub partition: u16,
 }
 
-/// Message broken configuration.
+/// Kafka message broker configuration.
 ///
 /// # Examples
 /// ```
@@ -54,7 +54,7 @@ pub struct MessageBrokerConfiguration {
 // Public functions
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-/// Creates MessageChannel.
+/// Creates Kafka message channel.
 ///
 /// # Examples
 /// ```
@@ -69,7 +69,7 @@ pub fn message_channel(topic: &'static str, partition: u16) -> MessageChannel {
     }
 }
 
-/// Creates MessageBrokerConfiguration.
+/// Creates Kafka message broker configuration.
 ///
 /// # Examples
 ///
@@ -86,11 +86,12 @@ pub fn configuration(topic: &'static str, partition: u16) -> MessageBrokerConfig
     }
 }
 
-/// Sets up message broker configuration by passing MessageBrokerConfiguration instance.
+/// Sets up Kafka message broker configuration by passing MessageBrokerConfiguration instance.
 ///
 ///  # Examples
 /// ```
 /// use eventure::kafka;
+///
 /// let configuration = kafka::configuration("Orders", 0);
 /// kafka::setup(configuration);
 /// ```
@@ -99,7 +100,7 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
     // TODO: implement
 }
 
-/// Registers event handler.
+/// Registers Kafka event handler.
 ///
 /// # Examples
 /// ```
@@ -172,13 +173,12 @@ pub fn register(_message_channel: MessageChannel, _event_handler: impl EventHand
     // TODO: implement
 }
 
-/// Unregisters event handler.
+/// Unregisters Kafka event handler.
 ///
 /// # Examples
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
-///
 /// use eventure::{kafka, model};
 ///
 /// let handler_channel = kafka::message_channel("Orders", 0);
@@ -249,7 +249,7 @@ pub fn unregister(_event_handler: impl EventHandler + Send + 'static) {
     // TODO: implement
 }
 
-/// Emits event without specifying message channel.
+/// Emits Kafka event without specifying message channel.
 ///
 /// # Examples
 /// ```
@@ -292,7 +292,7 @@ pub fn emit(_event: &dyn Event) {
     // TODO: implement
 }
 
-/// Emits event with specifying message channel.
+/// Emits Kafka event to specific message channel.
 ///
 /// # Examples
 /// ```

@@ -12,14 +12,14 @@ use log::{debug, info};
 // Public structs
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-/// Message channel definition.
+/// In-Memory message channel definition.
 ///
 /// # Examples
 /// ```
-/// use eventure::in_memory::{ChannelType, MessageChannel};
+/// use eventure::in_memory;
 ///
-/// let message_channel = MessageChannel {
-///         channel_type: ChannelType::TOPIC,
+/// let message_channel = in_memory::MessageChannel {
+///         channel_type: in_memory::ChannelType::TOPIC,
 ///         name: "Orders",
 /// };
 /// ```
@@ -35,19 +35,19 @@ pub enum ChannelType {
     QUEUE,
 }
 
-/// Message broken configuration.
+/// In-Memory message broker configuration.
 ///
 /// # Examples
 ///
 /// ```
-/// use eventure::in_memory::{ChannelType, MessageBrokerConfiguration, MessageChannel};
+/// use eventure::in_memory;
 ///
-/// let message_channel = MessageChannel {
-///         channel_type: ChannelType::TOPIC,
+/// let message_channel = in_memory::MessageChannel {
+///         channel_type: in_memory::ChannelType::TOPIC,
 ///         name: "Orders",
 /// };
 ///
-/// let configuration = MessageBrokerConfiguration {
+/// let configuration = in_memory::MessageBrokerConfiguration {
 ///     message_channel,
 ///     is_async: false,
 /// };
@@ -61,13 +61,13 @@ pub struct MessageBrokerConfiguration {
 // Public functions
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-/// Creates MessageChannel.
+/// Creates In-Memory message channel.
 ///
 /// # Examples
 /// ```
 /// use eventure::in_memory;
-/// use eventure::in_memory::ChannelType;
-/// let handler_channel = in_memory::message_channel(ChannelType::TOPIC, "Order");
+///
+/// let handler_channel = in_memory::message_channel(in_memory::ChannelType::TOPIC, "Order");
 /// ```
 pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) -> MessageChannel {
     MessageChannel {
@@ -76,14 +76,14 @@ pub fn message_channel(channel_type: ChannelType, channel_name: &'static str) ->
     }
 }
 
-/// Creates MessageBrokerConfiguration.
+/// Creates In-Memory message broker configuration.
 ///
 /// # Examples
 ///
 /// ```
 /// use eventure::in_memory;
-/// use eventure::in_memory::ChannelType;
-/// let configuration = in_memory::configuration(ChannelType::TOPIC, ".*", false);
+///
+/// let configuration = in_memory::configuration(in_memory::ChannelType::TOPIC, ".*", false);
 /// ```
 pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_async: bool) -> MessageBrokerConfiguration {
     MessageBrokerConfiguration {
@@ -92,13 +92,13 @@ pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_a
     }
 }
 
-/// Sets up message broker configuration by passing MessageBrokerConfiguration instance.
+/// Sets up In-Memory message broker configuration by passing MessageBrokerConfiguration instance.
 ///
 ///  # Examples
 /// ```
 /// use eventure::in_memory;
-/// use eventure::in_memory::ChannelType;
-/// let configuration = in_memory::configuration(ChannelType::TOPIC, ".*", false);
+///
+/// let configuration = in_memory::configuration(in_memory::ChannelType::TOPIC, ".*", false);
 /// in_memory::setup(configuration);
 /// ```
 pub fn setup(configuration: MessageBrokerConfiguration) {
@@ -106,16 +106,15 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
     BROKER_CONFIGURATION.lock().unwrap().update(MessageBrokerConfigurationInternal::from(configuration));
 }
 
-/// Registers event handler.
+/// Registers In-Memory event handler.
 ///
 /// # Examples
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
 /// use eventure::{in_memory, model};
-/// use eventure::in_memory::ChannelType;
 ///
-/// let handler_channel = in_memory::message_channel(ChannelType::TOPIC, "Order");
+/// let handler_channel = in_memory::message_channel(in_memory::ChannelType::TOPIC, "Order");
 ///
 /// struct OrderCreatedEventHandler;
 ///
@@ -182,7 +181,7 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
         Box::new(event_handler));
 }
 
-/// Unregisters event handler.
+/// Unregisters In-Memory event handler.
 ///
 /// # Examples
 /// ```
@@ -190,9 +189,8 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 /// use std::fmt::{Display, Formatter};
 ///
 /// use eventure::{in_memory, model};
-/// use eventure::in_memory::ChannelType;
 ///
-/// let handler_channel = in_memory::message_channel(ChannelType::TOPIC, "Order");
+/// let handler_channel = in_memory::message_channel(in_memory::ChannelType::TOPIC, "Order");
 ///
 /// struct OrderCreatedEventHandler;
 ///
@@ -260,7 +258,7 @@ pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
     HANDLER_REGISTRY.lock().unwrap().unregister(Box::new(event_handler));
 }
 
-/// Emits event without specifying message channel.
+/// Emits In-Memory event without specifying message channel.
 ///
 /// # Examples
 /// ```
@@ -303,15 +301,13 @@ pub fn emit(event: &dyn Event) {
     HANDLER_REGISTRY.lock().unwrap().emit(event, None);
 }
 
-/// Emits event with specifying message channel.
+/// Emits In-Memory event to specific message channel.
 ///
 /// # Examples
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
 /// use eventure::{in_memory, model};
-/// use eventure::in_memory::ChannelType::QUEUE;
-/// use eventure::in_memory::MessageChannel;
 ///
 /// struct OrderCreated {
 ///     event_id: String,
@@ -341,7 +337,7 @@ pub fn emit(event: &dyn Event) {
 ///     event_id: String::from("event_id"),
 ///     customer_id: String::from("customer_id"),
 /// };
-/// in_memory::emit_to_channel(&order_created, MessageChannel { channel_type: QUEUE, name: ".*" });
+/// in_memory::emit_to_channel(&order_created, in_memory::MessageChannel { channel_type: in_memory::ChannelType::QUEUE, name: ".*" });
 /// ```
 pub fn emit_to_channel(event: &dyn Event, channel: MessageChannel) {
     HANDLER_REGISTRY.lock().unwrap().emit(event, Some(channel));
