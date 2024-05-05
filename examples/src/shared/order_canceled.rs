@@ -6,12 +6,14 @@ use crate::shared::common;
 use eventure::model;
 use std::any::Any;
 use std::fmt::{Display, Formatter};
+use serde::{Deserialize, Serialize};
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 #[allow(dead_code)]
+#[derive(Serialize, Deserialize)]
 pub struct OrderCanceled {
     event_id: String,
     customer_id: String,
@@ -58,5 +60,8 @@ impl model::Event for OrderCanceled {
     }
     fn as_any(&self) -> &dyn Any {
         self
+    }
+    fn to_json(&self) -> String {
+        serde_json::to_string(&self).unwrap()
     }
 }
