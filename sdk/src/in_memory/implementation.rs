@@ -47,11 +47,6 @@ pub enum ChannelType {
 ///         name: "Orders",
 /// };
 ///
-/// let message_channel = MessageChannel {
-///         channel_type: ChannelType::TOPIC,
-///         name: "Orders",
-/// };
-///
 /// let configuration = MessageBrokerConfiguration {
 ///     message_channel,
 ///     is_async: false,
