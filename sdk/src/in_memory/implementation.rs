@@ -5,6 +5,7 @@
 use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
+use colored::Colorize;
 use regex::Regex;
 use log::{debug, info};
 
@@ -102,7 +103,7 @@ pub fn configuration(channel_type: ChannelType, channel_name: &'static str, is_a
 /// in_memory::setup(configuration);
 /// ```
 pub fn setup(configuration: MessageBrokerConfiguration) {
-    info!(target: "MessageBrokerConfiguration", "setting up: {}",configuration);
+    info!(target: &format_target("MessageBrokerConfiguration"), "setting up: {}",configuration);
     BROKER_CONFIGURATION.lock().unwrap().update(MessageBrokerConfigurationInternal::from(configuration));
 }
 
@@ -440,7 +441,7 @@ impl EventHandlerRegistryImpl {
 
 impl EventHandlerRegistry for EventHandlerRegistryImpl {
     fn register(&mut self, channel: MessageChannelInternal, handler: Box<dyn EventHandler + Send>) {
-        info!(target: "EventHandlerRegistry", "in-memory event handler registered: {}",handler);
+        info!(target: &format_target("EventHandlerRegistry"), "in-memory event handler registered: {}",handler);
         self.handler_configs.push(HandlerConfiguration { handler, channel });
     }
 
@@ -450,17 +451,17 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
             .map(|config| self.handler_configs.remove(config))
             .is_some();
         if removed {
-            info!(target: "EventHandlerRegistry", "event handler unregistered: {}", event_handler);
+            info!(target: &format_target("EventHandlerRegistry"), "event handler unregistered: {}", event_handler);
         }
     }
 
     fn emit(&self, event: &dyn Event, channel_option: Option<MessageChannel>) {
-        info!(target: "EventHandlerRegistry","in-memory event emitted: {}",event);
+        info!(target: &format_target("EventHandlerRegistry"), "in-memory event emitted: {}", event);
         match channel_option {
             Some(channel) =>
                 for config in self.handler_configs.iter() {
                     if config.channel.matches(&channel) {
-                        info!(target: "EventHandlerRegistry",
+                        info!(target: &format_target("EventHandlerRegistry"),
                             "channel matched (handler: {}, channel: {}, event: {})", config.handler, channel, event);
                         config.handler.handle(event);
                         if channel.channel_type == ChannelType::QUEUE {
@@ -469,13 +470,13 @@ impl EventHandlerRegistry for EventHandlerRegistryImpl {
                             break;
                         }
                     } else {
-                        debug!(target: "EventHandlerRegistry",
+                        debug!(target: &format_target("EventHandlerRegistry"),
                             "channel not matched (handler: {}, channel: {}, event: {})", config.handler, channel, event);
                     }
                 }
             None =>
                 for config in self.handler_configs.iter() {
-                    info!(target: "EventHandlerRegistry",
+                    info!(target: &format_target("EventHandlerRegistry"),
                         "not-specified channel matched by default (handler: {}, event: {})", config.handler, event);
                     config.handler.handle(event);
                 }
@@ -493,4 +494,8 @@ impl Display for MessageBrokerConfiguration {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[default-channel:{},async:{}]", self.message_channel, self.is_async)
     }
+}
+
+fn format_target(target: &str) -> String {
+    format!("{}", target.bold().yellow())
 }
