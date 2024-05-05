@@ -28,3 +28,6 @@ applications (microservices, typically).
 
 ### In-Memory messages
 `cargo run --example in-memory`
+
+### In-Memory messages (multiple threads)
+`cargo run --example in-memory-multi-threaded`
