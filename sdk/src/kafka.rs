@@ -8,7 +8,6 @@ mod implementation;
 
 pub use self::implementation::MessageChannel;
 pub use self::implementation::MessageBrokerConfiguration;
-
 pub use self::implementation::setup;
 pub use self::implementation::register;
 pub use self::implementation::unregister;

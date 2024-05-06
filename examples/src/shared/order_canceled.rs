@@ -2,11 +2,11 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-use crate::shared::common;
-use eventure::model;
 use std::any::Any;
 use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
+use eventure::model;
+use crate::shared::common;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs

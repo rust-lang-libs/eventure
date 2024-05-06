@@ -5,10 +5,8 @@
 use std::thread;
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
-
 use eventure::in_memory;
 use eventure::in_memory::ChannelType::TOPIC;
-
 use examples::shared::order_created;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------

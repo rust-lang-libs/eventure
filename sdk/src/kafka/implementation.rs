@@ -6,7 +6,6 @@
 // Public structs
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use std::future::Future;
 use std::process;
@@ -18,6 +17,10 @@ use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::AsyncRuntime;
 use futures::future::{self, FutureExt};
 use crate::common;
+use crate::model::{Event, EventHandler};
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Public functions
 
 /// Kafka message channel definition.
 ///
@@ -59,8 +62,6 @@ pub struct MessageBrokerConfiguration {
     pub timeout: u32,
 }
 
-// -----------------------------------------------------------------------------------------------------------------------------------------
-// Public functions
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 /// Creates Kafka message channel.
