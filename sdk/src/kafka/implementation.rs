@@ -10,12 +10,14 @@ use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
 use std::future::Future;
 use std::process;
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use log::info;
 use rdkafka::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::AsyncRuntime;
 use futures::future::{self, FutureExt};
+use crate::common;
 
 /// Kafka message channel definition.
 ///
@@ -54,7 +56,7 @@ pub struct MessageChannel {
 pub struct MessageBrokerConfiguration {
     pub message_channel: MessageChannel,
     pub topic_auto_create_enabled: bool,
-    pub timeout: u16,
+    pub timeout: u32,
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -103,8 +105,8 @@ pub fn configuration(topic: &'static str, partition: u16) -> MessageBrokerConfig
 /// kafka::setup(configuration);
 /// ```
 pub fn setup(configuration: MessageBrokerConfiguration) {
-    info!(target: "MessageBrokerConfiguration", "setting up: {}",configuration);
-    // TODO: implement
+    info!(target: &common::format_target("MessageBrokerConfiguration"), "setting up: {}",configuration);
+    BROKER_CONFIGURATION.lock().unwrap().update(MessageBrokerConfigurationInternal::from(configuration));
 }
 
 /// Registers Kafka event handler.
@@ -312,6 +314,7 @@ pub fn unregister(_event_handler: impl EventHandler + Send + 'static) {
 /// ```
 pub fn emit(event: &dyn Event) {
     smol::block_on(async {
+        let topic = BROKER_CONFIGURATION.lock().unwrap().message_channel.topic;
         let producer: FutureProducer<_, SmolRuntime> = ClientConfig::new()
             .set("bootstrap.servers", "localhost:9092")
             .set("message.timeout.ms", "5000")
@@ -319,7 +322,7 @@ pub fn emit(event: &dyn Event) {
 
         let delivery_status = producer
             .send::<Vec<u8>, _, _>(
-                FutureRecord::to(&"orders").payload(&event.to_json()),
+                FutureRecord::to(topic).payload(&event.to_json()),
                 Duration::from_secs(0),
             )
             .await;
@@ -327,6 +330,8 @@ pub fn emit(event: &dyn Event) {
             eprintln!("unable to send message: {}", e);
             process::exit(1);
         }
+
+        info!(target: &common::format_target("KafkaEmitter"), "event {} sent to the topic: {}", event, topic);
     })
 }
 
@@ -337,7 +342,7 @@ impl AsyncRuntime for SmolRuntime {
 
     fn spawn<T>(task: T)
         where
-            T: Future<Output = ()> + Send + 'static,
+            T: Future<Output=()> + Send + 'static,
     {
         smol::spawn(task).detach()
     }
@@ -395,6 +400,27 @@ pub fn emit_to_channel(_event: &dyn Event, _channel: MessageChannel) {
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
+// Private statics
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+static BROKER_CONFIGURATION: Mutex<MessageBrokerConfigurationInternal> = Mutex::new(MessageBrokerConfigurationInternal::new());
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+// Private structs
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+pub struct MessageChannelInternal {
+    pub topic: &'static str,
+    pub partition: u16,
+}
+
+struct MessageBrokerConfigurationInternal {
+    message_channel: MessageChannelInternal,
+    topic_auto_create_enabled: bool,
+    timeout: u32,
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
 // Implementation
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -408,5 +434,45 @@ impl Display for MessageBrokerConfiguration {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[default-channel:{},topic-auto-create:{},timeout:{}]",
                self.message_channel, self.topic_auto_create_enabled, self.timeout)
+    }
+}
+
+impl MessageChannelInternal {
+    const fn new() -> Self {
+        MessageChannelInternal {
+            topic: "default",
+            partition: 0,
+        }
+    }
+
+    fn from(message_channel: MessageChannel) -> Self {
+        MessageChannelInternal {
+            topic: message_channel.topic,
+            partition: message_channel.partition,
+        }
+    }
+}
+
+impl MessageBrokerConfigurationInternal {
+    const fn new() -> Self {
+        MessageBrokerConfigurationInternal {
+            message_channel: MessageChannelInternal::new(),
+            topic_auto_create_enabled: false,
+            timeout: 0,
+        }
+    }
+
+    fn from(configuration: MessageBrokerConfiguration) -> Self {
+        MessageBrokerConfigurationInternal {
+            message_channel: MessageChannelInternal::from(configuration.message_channel),
+            topic_auto_create_enabled: configuration.topic_auto_create_enabled,
+            timeout: configuration.timeout,
+        }
+    }
+
+    fn update(&mut self, configuration: MessageBrokerConfigurationInternal) {
+        self.message_channel = configuration.message_channel;
+        self.topic_auto_create_enabled = configuration.topic_auto_create_enabled;
+        self.timeout = configuration.timeout;
     }
 }
