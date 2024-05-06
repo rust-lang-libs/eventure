@@ -8,7 +8,14 @@
 
 use crate::model::{Event, EventHandler};
 use std::fmt::{Display, Formatter};
+use std::future::Future;
+use std::process;
+use std::time::{Duration, Instant};
 use log::info;
+use rdkafka::ClientConfig;
+use rdkafka::producer::{FutureProducer, FutureRecord};
+use rdkafka::util::AsyncRuntime;
+use futures::future::{self, FutureExt};
 
 /// Kafka message channel definition.
 ///
@@ -303,8 +310,41 @@ pub fn unregister(_event_handler: impl EventHandler + Send + 'static) {
 ///
 /// kafka::emit(&order_created);
 /// ```
-pub fn emit(_event: &dyn Event) {
-    // TODO: implement
+pub fn emit(event: &dyn Event) {
+    smol::block_on(async {
+        let producer: FutureProducer<_, SmolRuntime> = ClientConfig::new()
+            .set("bootstrap.servers", "localhost:9092")
+            .set("message.timeout.ms", "5000")
+            .create().expect("Producer creation error");
+
+        let delivery_status = producer
+            .send::<Vec<u8>, _, _>(
+                FutureRecord::to(&"orders").payload(&event.to_json()),
+                Duration::from_secs(0),
+            )
+            .await;
+        if let Err((e, _)) = delivery_status {
+            eprintln!("unable to send message: {}", e);
+            process::exit(1);
+        }
+    })
+}
+
+pub struct SmolRuntime;
+
+impl AsyncRuntime for SmolRuntime {
+    type Delay = future::Map<smol::Timer, fn(Instant)>;
+
+    fn spawn<T>(task: T)
+        where
+            T: Future<Output = ()> + Send + 'static,
+    {
+        smol::spawn(task).detach()
+    }
+
+    fn delay_for(duration: Duration) -> Self::Delay {
+        FutureExt::map(smol::Timer::after(duration), |_| ())
+    }
 }
 
 /// Emits Kafka event to specific message channel.
