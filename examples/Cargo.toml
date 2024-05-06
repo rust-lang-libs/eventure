@@ -16,6 +16,10 @@ path = "src/in_memory/main.rs"
 name = "in-memory-multi-threaded"
 path = "src/in_memory_multi_threaded/main.rs"
 
+[[example]]
+name = "kafka"
+path = "src/kafka/main.rs"
+
 [dependencies]
 eventure = { path = "../sdk" }
 uuid = { version = "1.8.0", features = ["v4"] }
