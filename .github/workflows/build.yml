@@ -21,5 +21,5 @@ jobs:
     - name: Build Examples
       run: cargo build -p examples --verbose
     - name: Run Tests
-      run: cargo test --verbose
+      run: cargo test --lib --bins --tests --verbose
 
