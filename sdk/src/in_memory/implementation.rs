@@ -6,9 +6,8 @@ use std::fmt::{Display, Formatter};
 use std::sync::Mutex;
 use regex::Regex;
 use log::{debug, info};
-
-use crate::model::{Event, EventHandler};
 use crate::common;
+use crate::model::{Event, EventHandler};
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs

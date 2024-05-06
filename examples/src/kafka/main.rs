@@ -4,7 +4,6 @@
 
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
-
 use eventure::kafka;
 use examples::shared::order_created;
 
