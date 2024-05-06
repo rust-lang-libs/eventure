@@ -299,7 +299,7 @@ pub fn unregister(_event_handler: impl EventHandler + Send + 'static) {
 ///         self
 ///     }
 ///     fn to_json(&self) -> String {
-///         todo!()
+///         serde_json::to_string(&self).unwrap()
 ///     }
 /// }
 ///
