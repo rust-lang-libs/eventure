@@ -8,14 +8,16 @@
 
 use std::fmt::{Display, Formatter};
 use std::future::Future;
-use std::process;
+use std::{process, thread};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use log::info;
-use rdkafka::ClientConfig;
+use rdkafka::{ClientConfig, Message};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::AsyncRuntime;
 use futures::future::{self, FutureExt};
+use futures::StreamExt;
+use rdkafka::consumer::{Consumer, StreamConsumer};
 use crate::common;
 use crate::model::{Event, EventHandler};
 
@@ -184,8 +186,44 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 /// let order_created_handler = OrderCreatedEventHandler;
 /// kafka::register(handler_channel, order_created_handler);
 /// ```
-pub fn register(_message_channel: MessageChannel, _event_handler: impl EventHandler + Send + 'static) {
-    // TODO: implement
+pub fn register(message_channel: MessageChannel, _event_handler: impl EventHandler + Send + 'static) {
+    thread::spawn(move || {
+        smol::block_on(async {
+            let topic = message_channel.topic;
+            let consumer: StreamConsumer<_, SmolRuntime> = ClientConfig::new()
+                .set("bootstrap.servers", "localhost:9092")
+                .set("session.timeout.ms", "6000")
+                .set("enable.auto.commit", "true")
+                .set("auto.offset.reset", "earliest")
+                .set("group.id", "example")
+                .create().expect(
+                "Consumer creation failed");
+            consumer.subscribe(&[&topic]).unwrap();
+
+            loop {
+                let mut stream = consumer.stream();
+                let message = stream.next().await;
+                match message {
+                    Some(Ok(message)) => println!(
+                        "Received message: {}",
+                        match message.payload_view::<str>() {
+                            None => "",
+                            Some(Ok(s)) => s,
+                            Some(Err(_)) => "<invalid utf-8>",
+                        }
+                    ),
+                    Some(Err(e)) => {
+                        eprintln!("Error receiving message: {}", e);
+                        process::exit(1);
+                    }
+                    None => {
+                        eprintln!("Consumer unexpectedly returned no messages");
+                        process::exit(1);
+                    }
+                }
+            }
+        });
+    });
 }
 
 /// Unregisters Kafka event handler.
