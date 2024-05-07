@@ -38,5 +38,9 @@ Install docker and docker-compose on local machine, start kafka containers:
 cd tools\kafka
 docker-compose up -d
 ```
+Create topic 'orders'
+```
+kafka-topics --bootstrap-servers localhost:9092 --create --topic orders
+```
 
 `cargo run --example kafka`

@@ -8,6 +8,7 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use crate::shared::common;
 use eventure::model;
+use eventure::model::Event;
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public structs
@@ -58,6 +59,7 @@ impl Display for OrderCreated {
     }
 }
 
+#[typetag::serde]
 impl model::Event for OrderCreated {
     fn id(&self) -> &str {
         &self.event_id[..]
@@ -69,7 +71,8 @@ impl model::Event for OrderCreated {
         self
     }
     fn to_json(&self) -> String {
-        serde_json::to_string(&self).unwrap()
+        let event = self as &dyn Event;
+        serde_json::to_string(&event).unwrap()
     }
 }
 

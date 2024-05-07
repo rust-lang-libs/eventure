@@ -186,7 +186,7 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 /// let order_created_handler = OrderCreatedEventHandler;
 /// kafka::register(handler_channel, order_created_handler);
 /// ```
-pub fn register(message_channel: MessageChannel, _event_handler: impl EventHandler + Send + 'static) {
+pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
     thread::spawn(move || {
         smol::block_on(async {
             let topic = message_channel.topic;
@@ -196,22 +196,23 @@ pub fn register(message_channel: MessageChannel, _event_handler: impl EventHandl
                 .set("enable.auto.commit", "true")
                 .set("auto.offset.reset", "earliest")
                 .set("group.id", "example")
-                .create().expect(
-                "Consumer creation failed");
+                .create().expect("Consumer creation failed");
             consumer.subscribe(&[&topic]).unwrap();
 
             loop {
                 let mut stream = consumer.stream();
                 let message = stream.next().await;
                 match message {
-                    Some(Ok(message)) => println!(
-                        "Received message: {}",
-                        match message.payload_view::<str>() {
+                    Some(Ok(message)) => {
+                        let message_str = match message.payload_view::<str>() {
                             None => "",
                             Some(Ok(s)) => s,
                             Some(Err(_)) => "<invalid utf-8>",
-                        }
-                    ),
+                        };
+
+                        let event: Box<dyn Event> = serde_json::from_str(message_str).unwrap();
+                        event_handler.handle(&*event);
+                    }
                     Some(Err(e)) => {
                         eprintln!("Error receiving message: {}", e);
                         process::exit(1);

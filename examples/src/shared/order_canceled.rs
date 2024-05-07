@@ -51,6 +51,7 @@ impl Display for OrderCanceled {
     }
 }
 
+#[typetag::serde]
 impl model::Event for OrderCanceled {
     fn id(&self) -> &str {
         &self.event_id[..]
