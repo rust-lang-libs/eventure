@@ -32,7 +32,7 @@ fn main() {
     let order_created = order_created::create();
     kafka::emit(&order_created);
 
-    let duration = time::Duration::from_secs(5);
+    let duration = time::Duration::from_secs(10);
     thread::sleep(duration);
 
     println!();
