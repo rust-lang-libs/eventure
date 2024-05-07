@@ -6,7 +6,7 @@
 
 use std::any::Any;
 use std::fmt::{Display};
-
+use mopa::*;
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public traits
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -53,12 +53,15 @@ use std::fmt::{Display};
 ///     }
 /// }
 /// ```
-pub trait Event: Display  {
+#[typetag::serde(tag = "type")]
+pub trait Event: Display + mopa::Any  {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
     fn as_any(&self) -> &dyn Any;
     fn to_json(&self) -> String;
 }
+
+mopafy!(Event);
 
 /// Base event handler abstraction. It should be implemented for each event handler.
 /// # Examples
