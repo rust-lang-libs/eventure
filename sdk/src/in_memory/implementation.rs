@@ -134,6 +134,7 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 ///     }
 /// }
 ///
+/// #[typetag::serde]
 /// impl model::Event for OrderCreated {
 ///     fn id(&self) -> &str {
 ///         &self.event_id[..]
@@ -215,6 +216,7 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 ///     }
 /// }
 ///
+/// #[typetag::serde]
 /// impl model::Event for OrderCreated {
 ///     fn id(&self) -> &str {
 ///         &self.event_id[..]
@@ -292,7 +294,7 @@ pub fn unregister(event_handler: impl EventHandler + Send + 'static) {
 ///     }
 /// }
 ///
-///
+/// #[typetag::serde]
 /// impl model::Event for OrderCreated {
 ///     fn id(&self) -> &str {
 ///         &self.event_id[..]
@@ -341,6 +343,7 @@ pub fn emit(event: &dyn Event) {
 ///     }
 /// }
 ///
+/// #[typetag::serde]
 /// impl model::Event for OrderCreated {
 ///     fn id(&self) -> &str {
 ///         &self.event_id[..]

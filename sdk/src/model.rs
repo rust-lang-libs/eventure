@@ -18,9 +18,10 @@ use mopa::*;
 /// ```
 /// use std::any::Any;
 /// use std::fmt::{Display, Formatter};
-/// use serde::{Serialize, Serializer};
+/// use serde::{Deserialize, Serialize, Serializer};
 /// use eventure::model;
 ///
+/// #[derive(Serialize, Deserialize)]
 /// pub struct OrderCreated {
 ///     event_id: String,
 ///     customer_id: String,
@@ -33,11 +34,7 @@ use mopa::*;
 ///     }
 /// }
 ///
-/// impl Serialize for OrderCreated {
-///     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-///         todo!()
-///     }}
-///
+/// #[typetag::serde]
 /// impl model::Event for OrderCreated {
 ///     fn id(&self) -> &str {
 ///         &self.event_id[..]
