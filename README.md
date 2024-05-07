@@ -31,3 +31,12 @@ applications (microservices, typically).
 
 ### In-Memory messages (multiple threads)
 `cargo run --example in-memory-multi-threaded`
+
+### Kafka messages
+Install docker and docker-compose on local machine, start kafka containers:
+```
+cd tools\kafka
+docker-compose up -d
+```
+
+`cargo run --example kafka`
