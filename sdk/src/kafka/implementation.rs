@@ -6,18 +6,20 @@
 // Public structs
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+use std::{process, thread};
 use std::fmt::{Display, Formatter};
 use std::future::Future;
-use std::{process, thread};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
-use log::info;
-use rdkafka::{ClientConfig, Message};
-use rdkafka::producer::{FutureProducer, FutureRecord};
-use rdkafka::util::AsyncRuntime;
+
 use futures::future::{self, FutureExt};
 use futures::StreamExt;
+use log::info;
+use rdkafka::{ClientConfig, Message};
 use rdkafka::consumer::{Consumer, StreamConsumer};
+use rdkafka::producer::{FutureProducer, FutureRecord};
+use rdkafka::util::AsyncRuntime;
+
 use crate::common;
 use crate::model::{Event, EventHandler};
 
@@ -53,6 +55,7 @@ pub struct MessageChannel {
 ///
 /// let configuration = kafka::MessageBrokerConfiguration {
 ///     message_channel,
+///     bootstrap_servers: "localhost:9092",
 ///     topic_auto_create_enabled: false,
 ///     timeout: 10000,
 /// };
@@ -60,6 +63,7 @@ pub struct MessageChannel {
 /// ```
 pub struct MessageBrokerConfiguration {
     pub message_channel: MessageChannel,
+    pub bootstrap_servers: &'static str,
     pub topic_auto_create_enabled: bool,
     pub timeout: u32,
 }
@@ -93,6 +97,7 @@ pub fn message_channel(topic: &'static str, partition: u16) -> MessageChannel {
 pub fn configuration(topic: &'static str, partition: u16) -> MessageBrokerConfiguration {
     MessageBrokerConfiguration {
         message_channel: message_channel(topic, partition),
+        bootstrap_servers: "localhost:9092",
         topic_auto_create_enabled: false,
         timeout: 10000,
     }
@@ -189,16 +194,19 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 /// ```
 pub fn register(message_channel: MessageChannel, event_handler: impl EventHandler + Send + 'static) {
     thread::spawn(move || {
+        let configuration = BROKER_CONFIGURATION.lock().unwrap();
         smol::block_on(async {
             let topic = message_channel.topic;
             let consumer: StreamConsumer<_, SmolRuntime> = ClientConfig::new()
-                .set("bootstrap.servers", "localhost:9092")
-                .set("session.timeout.ms", "6000")
+                .set("bootstrap.servers", configuration.bootstrap_servers)
+                .set("session.timeout.ms", configuration.timeout.to_string())
                 .set("enable.auto.commit", "true")
                 .set("auto.offset.reset", "earliest")
                 .set("group.id", "example")
                 .create().expect("Consumer creation failed");
             consumer.subscribe(&[&topic]).unwrap();
+
+            drop(configuration);
 
             loop {
                 let mut stream = consumer.stream();
@@ -357,11 +365,14 @@ pub fn unregister(_event_handler: impl EventHandler + Send + 'static) {
 /// ```
 pub fn emit(event: &dyn Event) {
     smol::block_on(async {
-        let topic = BROKER_CONFIGURATION.lock().unwrap().message_channel.topic;
+        let configuration = BROKER_CONFIGURATION.lock().unwrap();
+        let topic = configuration.message_channel.topic;
         let producer: FutureProducer<_, SmolRuntime> = ClientConfig::new()
-            .set("bootstrap.servers", "localhost:9092")
-            .set("message.timeout.ms", "5000")
+            .set("bootstrap.servers", configuration.bootstrap_servers)
+            .set("message.timeout.ms", configuration.timeout.to_string())
             .create().expect("Producer creation error");
+
+        drop(configuration);
 
         let delivery_status = producer
             .send::<Vec<u8>, _, _>(
@@ -460,6 +471,7 @@ pub struct MessageChannelInternal {
 
 struct MessageBrokerConfigurationInternal {
     message_channel: MessageChannelInternal,
+    bootstrap_servers: &'static str,
     topic_auto_create_enabled: bool,
     timeout: u32,
 }
@@ -501,6 +513,7 @@ impl MessageBrokerConfigurationInternal {
     const fn new() -> Self {
         MessageBrokerConfigurationInternal {
             message_channel: MessageChannelInternal::new(),
+            bootstrap_servers: "localhost:9092",
             topic_auto_create_enabled: false,
             timeout: 0,
         }
@@ -509,6 +522,7 @@ impl MessageBrokerConfigurationInternal {
     fn from(configuration: MessageBrokerConfiguration) -> Self {
         MessageBrokerConfigurationInternal {
             message_channel: MessageChannelInternal::from(configuration.message_channel),
+            bootstrap_servers: "localhost:9092",
             topic_auto_create_enabled: configuration.topic_auto_create_enabled,
             timeout: configuration.timeout,
         }
@@ -516,6 +530,7 @@ impl MessageBrokerConfigurationInternal {
 
     fn update(&mut self, configuration: MessageBrokerConfigurationInternal) {
         self.message_channel = configuration.message_channel;
+        self.bootstrap_servers = configuration.bootstrap_servers;
         self.topic_auto_create_enabled = configuration.topic_auto_create_enabled;
         self.timeout = configuration.timeout;
     }
