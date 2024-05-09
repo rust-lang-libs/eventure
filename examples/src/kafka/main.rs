@@ -22,7 +22,7 @@ fn main() {
     let order_created = order_created::create();
     kafka::emit(&order_created);
 
-    let message_channel = kafka::message_channel("orders", 0);
+    let message_channel = kafka::message_channel("orders", 0, "consumer_group");
     let order_created_handler = order_created::handler();
     kafka::register(message_channel, order_created_handler);
 

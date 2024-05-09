@@ -34,12 +34,14 @@ use crate::model::{Event, EventHandler};
 ///
 /// let message_channel = kafka::MessageChannel {
 ///     topic: "Orders",
-///     partition: 0
+///     partition: 0,
+///     group_id: "default"
 /// };
 /// ```
 pub struct MessageChannel {
     pub topic: &'static str,
     pub partition: u16,
+    pub group_id: &'static str
 }
 
 /// Kafka message broker configuration.
@@ -50,13 +52,15 @@ pub struct MessageChannel {
 ///
 /// let message_channel = kafka::MessageChannel {
 ///     topic: "Orders",
-///     partition: 0
+///     partition: 0,
+///     group_id: "consumer_group"
 /// };
 ///
 /// let configuration = kafka::MessageBrokerConfiguration {
 ///     message_channel,
 ///     bootstrap_servers: "localhost:9092",
 ///     topic_auto_create_enabled: false,
+///     auto_commit_enabled: false,
 ///     timeout: 10000,
 /// };
 ///
@@ -65,6 +69,7 @@ pub struct MessageBrokerConfiguration {
     pub message_channel: MessageChannel,
     pub bootstrap_servers: &'static str,
     pub topic_auto_create_enabled: bool,
+    pub auto_commit_enabled: bool,
     pub timeout: u32,
 }
 
@@ -76,12 +81,13 @@ pub struct MessageBrokerConfiguration {
 /// ```
 /// use eventure::kafka;
 ///
-/// let handler_channel = kafka::message_channel("Orders", 0);
+/// let handler_channel = kafka::message_channel("Orders", 0, "consumer_group");
 /// ```
-pub fn message_channel(topic: &'static str, partition: u16) -> MessageChannel {
+pub fn message_channel(topic: &'static str, partition: u16, group_id: &'static str) -> MessageChannel {
     MessageChannel {
         topic,
         partition,
+        group_id
     }
 }
 
@@ -96,9 +102,10 @@ pub fn message_channel(topic: &'static str, partition: u16) -> MessageChannel {
 /// ```
 pub fn configuration(topic: &'static str, partition: u16) -> MessageBrokerConfiguration {
     MessageBrokerConfiguration {
-        message_channel: message_channel(topic, partition),
+        message_channel: message_channel(topic, partition, "default"),
         bootstrap_servers: "localhost:9092",
         topic_auto_create_enabled: false,
+        auto_commit_enabled: true,
         timeout: 10000,
     }
 }
@@ -126,7 +133,7 @@ pub fn setup(configuration: MessageBrokerConfiguration) {
 /// use serde::{Deserialize, Serialize};
 /// use eventure::{kafka, model};
 ///
-/// let handler_channel = kafka::message_channel("Orders", 0);
+/// let handler_channel = kafka::message_channel("orders", 0, "consumer_group");
 ///
 /// struct OrderCreatedEventHandler;
 ///
@@ -200,9 +207,9 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
             let consumer: StreamConsumer<_, SmolRuntime> = ClientConfig::new()
                 .set("bootstrap.servers", configuration.bootstrap_servers)
                 .set("session.timeout.ms", configuration.timeout.to_string())
-                .set("enable.auto.commit", "true")
+                .set("enable.auto.commit", configuration.auto_commit_enabled.to_string())
+                .set("group.id", message_channel.group_id)
                 .set("auto.offset.reset", "earliest")
-                .set("group.id", "example")
                 .create().expect("Consumer creation failed");
             consumer.subscribe(&[&topic]).unwrap();
 
@@ -245,7 +252,7 @@ pub fn register(message_channel: MessageChannel, event_handler: impl EventHandle
 /// use serde::{Deserialize, Serialize};
 /// use eventure::{kafka, model};
 ///
-/// let handler_channel = kafka::message_channel("Orders", 0);
+/// let handler_channel = kafka::message_channel("orders", 0, "consumer_group");
 ///
 /// struct OrderCreatedEventHandler;
 ///
@@ -448,7 +455,7 @@ impl AsyncRuntime for SmolRuntime {
 ///     event_id: String::from("event_id"),
 ///     customer_id: String::from("customer_id"),
 /// };
-/// kafka::emit_to_channel(&order_created, kafka::MessageChannel { topic: "Orders", partition: 0 });
+/// kafka::emit_to_channel(&order_created, kafka::MessageChannel { topic: "Orders", partition: 0, group_id: "consumer_group" });
 /// ```
 pub fn emit_to_channel(_event: &dyn Event, _channel: MessageChannel) {
     // TODO: implement
@@ -467,12 +474,14 @@ static BROKER_CONFIGURATION: Mutex<MessageBrokerConfigurationInternal> = Mutex::
 pub struct MessageChannelInternal {
     pub topic: &'static str,
     pub partition: u16,
+    pub group_id: &'static str
 }
 
 struct MessageBrokerConfigurationInternal {
     message_channel: MessageChannelInternal,
     bootstrap_servers: &'static str,
     topic_auto_create_enabled: bool,
+    auto_commit_enabled: bool,
     timeout: u32,
 }
 
@@ -498,6 +507,7 @@ impl MessageChannelInternal {
         MessageChannelInternal {
             topic: "default",
             partition: 0,
+            group_id: "default"
         }
     }
 
@@ -505,6 +515,7 @@ impl MessageChannelInternal {
         MessageChannelInternal {
             topic: message_channel.topic,
             partition: message_channel.partition,
+            group_id: message_channel.group_id
         }
     }
 }
@@ -515,6 +526,7 @@ impl MessageBrokerConfigurationInternal {
             message_channel: MessageChannelInternal::new(),
             bootstrap_servers: "localhost:9092",
             topic_auto_create_enabled: false,
+            auto_commit_enabled: true,
             timeout: 0,
         }
     }
@@ -522,8 +534,9 @@ impl MessageBrokerConfigurationInternal {
     fn from(configuration: MessageBrokerConfiguration) -> Self {
         MessageBrokerConfigurationInternal {
             message_channel: MessageChannelInternal::from(configuration.message_channel),
-            bootstrap_servers: "localhost:9092",
+            bootstrap_servers: configuration.bootstrap_servers,
             topic_auto_create_enabled: configuration.topic_auto_create_enabled,
+            auto_commit_enabled: configuration.auto_commit_enabled,
             timeout: configuration.timeout,
         }
     }
