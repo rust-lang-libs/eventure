@@ -36,7 +36,7 @@ pub fn create() -> OrderCreated {
 
 pub fn handler() -> OrderCreatedEventHandler {
     OrderCreatedEventHandler {
-        id: String::from("OrderCreatedEventHandler")
+        id: String::from("OrderCreatedEventHandler-") + &common::generate_id()
     }
 }
 
@@ -97,6 +97,6 @@ impl model::EventHandler for OrderCreatedEventHandler {
 
 impl OrderCreatedEventHandler {
     fn handle(&self, event: &OrderCreated) {
-        info!(target: "OrderCreatedEventHandler", "handling {}", event)
+        info!(target: &self.id, "handling {}", event)
     }
 }

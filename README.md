@@ -42,5 +42,8 @@ Create topic 'orders'
 ```
 kafka-topics --bootstrap-servers localhost:9092 --create --topic orders
 ```
+Run examples:
 
 `cargo run --example kafka`
+
+`cargo run --example kafka-many-handlers`
