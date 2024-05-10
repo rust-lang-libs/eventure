@@ -1,11 +1,18 @@
 [package]
 name = "eventure"
 description = "Event-Driven messaging library for Rust"
+authors = ["Piotr Marat <pmarat.dev@gmail.com>"]
+documentation = "https://docs.rs/eventure"
 repository = "https://github.com/rust-lang-libs/eventure"
+categories = ["api-bindings"]
+keywords = ["api", "events", "event-driven"]
 readme = "../README.md"
 version = "0.0.16"
 edition = "2021"
 license = "MIT"
+
+[features]
+examples = []
 
 [dependencies]
 regex = "1.10.4"
