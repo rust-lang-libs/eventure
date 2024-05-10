@@ -11,7 +11,6 @@ use std::fmt::{Display, Formatter};
 use std::future::Future;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
-
 use futures::future::{self, FutureExt};
 use futures::StreamExt;
 use log::info;
@@ -19,7 +18,6 @@ use rdkafka::{ClientConfig, Message};
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::AsyncRuntime;
-
 use crate::common;
 use crate::model::{Event, EventHandler};
 

@@ -5,8 +5,9 @@
 //! Core abstractions shared amongst different implementations/integrations.
 
 use std::any::Any;
-use std::fmt::{Display};
+use std::fmt::Display;
 use mopa::*;
+
 // -----------------------------------------------------------------------------------------------------------------------------------------
 // Public traits
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -46,12 +47,13 @@ use mopa::*;
 ///         self
 ///     }
 ///     fn to_json(&self) -> String {
-///         todo!()
+///         let event = self as &dyn model::Event;
+///         serde_json::to_string(&event).unwrap()
 ///     }
 /// }
 /// ```
 #[typetag::serde(tag = "type")]
-pub trait Event: Display + mopa::Any  {
+pub trait Event: Display + mopa::Any {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
     fn as_any(&self) -> &dyn Any;
@@ -79,7 +81,7 @@ mopafy!(Event);
 ///
 /// impl Display for OrderCreated {
 ///     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-///         todo!()
+///         write!(f, "{} event, id {}", "OrderCreated", self.event_id)
 ///     }
 /// }
 ///
@@ -101,7 +103,6 @@ mopafy!(Event);
 ///         String::from(&self.id)
 ///     }
 /// }
-///
 ///
 /// impl OrderCreatedEventHandler {
 ///     fn handle(&self, event: &OrderCreated) {

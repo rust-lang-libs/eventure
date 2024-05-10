@@ -11,9 +11,6 @@ version = "0.0.16"
 edition = "2021"
 license = "MIT"
 
-[features]
-examples = []
-
 [dependencies]
 regex = "1.10.4"
 uuid = { version = "1.8.0", features = ["v4"] }
