@@ -7,7 +7,7 @@ repository = "https://github.com/rust-lang-libs/eventure"
 categories = ["api-bindings"]
 keywords = ["api", "events", "event-driven"]
 readme = "../README.md"
-version = "0.0.16"
+version = "0.0.17"
 edition = "2021"
 license = "MIT"
 
