@@ -2,7 +2,7 @@
 // Rust-Lang Libs/Eventure 2024
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-//! Apache Kafka integration. Work in progress, at the moment.
+//! Apache Kafka integration.
 
 mod implementation;
 
